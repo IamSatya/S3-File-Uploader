@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, HardDrive, Files, Clock } from "lucide-react";
-import type { TimerConfig } from "@shared/schema";
+import { Users, HardDrive, Files, Clock, UserPlus } from "lucide-react";
+import { registerSchema, type RegisterInput, type TimerConfig } from "@shared/schema";
 
 interface UserStats {
   userId: string;
@@ -46,6 +48,18 @@ export default function Admin() {
   const { toast } = useToast();
   const [deadline, setDeadline] = useState<string>('');
   const [isActive, setIsActive] = useState(true);
+  const [showCreateUser, setShowCreateUser] = useState(false);
+
+  const createUserForm = useForm<RegisterInput & { isAdmin: boolean }>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+      firstName: '',
+      lastName: '',
+      isAdmin: false,
+    },
+  });
 
   // Redirect non-admin users
   useEffect(() => {
@@ -110,6 +124,28 @@ export default function Admin() {
     },
   });
 
+  const createUserMutation = useMutation({
+    mutationFn: async (data: RegisterInput & { isAdmin: boolean }) => {
+      return await apiRequest('POST', '/api/admin/create-user', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      createUserForm.reset();
+      setShowCreateUser(false);
+      toast({
+        title: "Success",
+        description: "User created successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create user",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpdateTimer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!deadline) {
@@ -121,6 +157,11 @@ export default function Admin() {
       return;
     }
     updateTimerMutation.mutate({ deadline, isActive });
+  };
+
+  const handleCreateUser = (data: RegisterInput) => {
+    const isAdmin = (createUserForm.getValues() as any).isAdmin === true;
+    createUserMutation.mutate({ ...data, isAdmin });
   };
 
   // Show loading while checking auth or fetching data
@@ -236,6 +277,105 @@ export default function Admin() {
                 </Button>
               </form>
             </CardContent>
+          </Card>
+
+          {/* Create User */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserPlus className="h-5 w-5" />
+                    Create New User
+                  </CardTitle>
+                  <CardDescription>
+                    Manually create user accounts with email and password
+                  </CardDescription>
+                </div>
+                <Button
+                  variant={showCreateUser ? "outline" : "default"}
+                  onClick={() => setShowCreateUser(!showCreateUser)}
+                  data-testid="button-toggle-create-user"
+                >
+                  {showCreateUser ? 'Cancel' : 'Create User'}
+                </Button>
+              </div>
+            </CardHeader>
+            {showCreateUser && (
+              <CardContent>
+                <form onSubmit={createUserForm.handleSubmit(handleCreateUser)} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="create-firstName">First Name</Label>
+                      <Input
+                        id="create-firstName"
+                        {...createUserForm.register('firstName')}
+                        data-testid="input-create-firstName"
+                      />
+                      {createUserForm.formState.errors.firstName && (
+                        <p className="text-sm text-destructive">{createUserForm.formState.errors.firstName.message}</p>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="create-lastName">Last Name</Label>
+                      <Input
+                        id="create-lastName"
+                        {...createUserForm.register('lastName')}
+                        data-testid="input-create-lastName"
+                      />
+                      {createUserForm.formState.errors.lastName && (
+                        <p className="text-sm text-destructive">{createUserForm.formState.errors.lastName.message}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="create-email">Email</Label>
+                    <Input
+                      id="create-email"
+                      type="email"
+                      {...createUserForm.register('email')}
+                      data-testid="input-create-email"
+                    />
+                    {createUserForm.formState.errors.email && (
+                      <p className="text-sm text-destructive">{createUserForm.formState.errors.email.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="create-password">Password</Label>
+                    <Input
+                      id="create-password"
+                      type="password"
+                      {...createUserForm.register('password')}
+                      data-testid="input-create-password"
+                    />
+                    {createUserForm.formState.errors.password && (
+                      <p className="text-sm text-destructive">{createUserForm.formState.errors.password.message}</p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="create-isAdmin"
+                      checked={createUserForm.watch('isAdmin' as any)}
+                      onCheckedChange={(checked) => createUserForm.setValue('isAdmin' as any, checked)}
+                      data-testid="switch-create-isAdmin"
+                    />
+                    <Label htmlFor="create-isAdmin">Admin User</Label>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    disabled={createUserMutation.isPending}
+                    data-testid="button-submit-create-user"
+                  >
+                    {createUserMutation.isPending ? 'Creating...' : 'Create User'}
+                  </Button>
+                </form>
+              </CardContent>
+            )}
           </Card>
 
           {/* User Storage Stats */}

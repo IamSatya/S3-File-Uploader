@@ -448,11 +448,13 @@ export default function Dashboard() {
                       Admin Dashboard
                     </DropdownMenuItem>
                   )}
-                  <DropdownMenuItem asChild>
-                    <a href="/api/logout" data-testid="button-logout">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </a>
+                  <DropdownMenuItem onClick={async () => {
+                    await apiRequest('POST', '/api/auth/logout', {});
+                    queryClient.clear();
+                    window.location.href = '/';
+                  }} data-testid="button-logout">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
