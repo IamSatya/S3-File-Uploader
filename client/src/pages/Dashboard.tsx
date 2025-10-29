@@ -14,6 +14,7 @@ import { FileCard } from '@/components/FileCard';
 import { CreateFolderDialog } from '@/components/CreateFolderDialog';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { FileUploadZone } from '@/components/FileUploadZone';
+import { FileSearchBar } from '@/components/FileSearchBar';
 import { FolderPlus, Upload, LogOut, FolderOpen, Loader2 } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
 
@@ -24,22 +25,40 @@ export default function Dashboard() {
   const [showInstructions, setShowInstructions] = useState(true);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<FileMetadata | null>(null);
+  const [search, setSearch] = useState('');
+  const [fileType, setFileType] = useState('all');
+  const [dateRange, setDateRange] = useState('all');
 
-  const { data: files = [], isLoading: filesLoading } = useQuery<FileMetadata[]>({
-    queryKey: ['/api/files', currentPath],
-    onError: (error: Error) => {
-      if (isUnauthorizedError(error)) {
-        toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
-          variant: "destructive",
-        });
-        setTimeout(() => {
-          window.location.href = "/api/login";
-        }, 500);
+  const { data: files = [], isLoading: filesLoading, error } = useQuery<FileMetadata[]>({
+    queryKey: ['/api/files', currentPath, search, fileType, dateRange],
+    queryFn: async () => {
+      const params = new URLSearchParams({ path: currentPath });
+      if (search) params.append('search', search);
+      if (fileType && fileType !== 'all') params.append('fileType', fileType);
+      if (dateRange && dateRange !== 'all') params.append('dateRange', dateRange);
+      
+      const response = await fetch(`/api/files?${params}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch files');
       }
+      return response.json();
     },
   });
+
+  // Handle query errors
+  useEffect(() => {
+    if (error && isUnauthorizedError(error as Error)) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+    }
+  }, [error, toast]);
 
   const { data: timerConfig } = useQuery<TimerConfig>({
     queryKey: ['/api/timer-config'],
@@ -52,7 +71,7 @@ export default function Dashboard() {
       await apiRequest('POST', '/api/files/folder', { name, path: currentPath });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
       setShowCreateFolder(false);
       toast({
         title: "Success",
@@ -101,7 +120,7 @@ export default function Dashboard() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
       toast({
         title: "Success",
         description: "Files uploaded successfully",
@@ -151,7 +170,7 @@ export default function Dashboard() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
       toast({
         title: "Success",
         description: "Folder uploaded successfully",
@@ -182,7 +201,7 @@ export default function Dashboard() {
       await apiRequest('DELETE', `/api/files/${fileId}`, {});
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/files'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
       setFileToDelete(null);
       toast({
         title: "Success",
@@ -304,10 +323,11 @@ export default function Dashboard() {
         )}
 
         <div className="space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <Breadcrumb path={currentPath} onNavigate={setCurrentPath} />
-            
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <Breadcrumb path={currentPath} onNavigate={setCurrentPath} />
+              
+              <div className="flex flex-wrap items-center gap-2">
               <Button
                 onClick={() => setShowCreateFolder(true)}
                 variant="outline"
@@ -356,6 +376,16 @@ export default function Dashboard() {
                 </label>
               </Button>
             </div>
+            </div>
+            
+            <FileSearchBar
+              search={search}
+              onSearchChange={setSearch}
+              fileType={fileType}
+              onFileTypeChange={setFileType}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
           </div>
 
           {!uploadDisabled && (

@@ -66,13 +66,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     return now < deadline && config.isActive;
   }
 
-  // File listing route
+  // File listing route with search and filtering
   app.get('/api/files', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const path = (req.query.path as string) || '/';
+      const search = (req.query.search as string) || '';
+      const fileType = (req.query.fileType as string) || '';
+      const dateRange = (req.query.dateRange as string) || '';
       
-      const files = await storage.getFilesByPath(userId, path);
+      let files = await storage.getFilesByPath(userId, path);
+      
+      // Apply search filter
+      if (search) {
+        const searchLower = search.toLowerCase();
+        files = files.filter(file => 
+          file.name.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      // Apply file type filter
+      if (fileType && fileType !== 'all') {
+        if (fileType === 'folder') {
+          files = files.filter(file => file.isFolder);
+        } else if (fileType === 'image') {
+          files = files.filter(file => !file.isFolder && file.mimeType?.startsWith('image/'));
+        } else if (fileType === 'document') {
+          files = files.filter(file => !file.isFolder && (
+            file.mimeType?.includes('pdf') ||
+            file.mimeType?.includes('document') ||
+            file.mimeType?.includes('text/')
+          ));
+        } else if (fileType === 'video') {
+          files = files.filter(file => !file.isFolder && file.mimeType?.startsWith('video/'));
+        } else if (fileType === 'audio') {
+          files = files.filter(file => !file.isFolder && file.mimeType?.startsWith('audio/'));
+        } else if (fileType === 'archive') {
+          files = files.filter(file => !file.isFolder && (
+            file.mimeType?.includes('zip') ||
+            file.mimeType?.includes('compressed') ||
+            file.mimeType?.includes('tar') ||
+            file.mimeType?.includes('rar')
+          ));
+        }
+      }
+      
+      // Apply date range filter
+      if (dateRange && dateRange !== 'all') {
+        const now = new Date();
+        let startDate: Date;
+        
+        if (dateRange === 'today') {
+          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (dateRange === 'week') {
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        } else if (dateRange === 'month') {
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        } else {
+          startDate = new Date(0); // Beginning of time
+        }
+        
+        files = files.filter(file => {
+          if (!file.createdAt) return false;
+          const fileDate = new Date(file.createdAt);
+          return fileDate >= startDate;
+        });
+      }
+      
       res.json(files);
     } catch (error) {
       console.error("Error fetching files:", error);
