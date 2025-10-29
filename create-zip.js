@@ -19,12 +19,34 @@ const excludePatterns = [
   'tmp',
   '.env',
   '.cache',
+  '.local',
+  '.upm',
+  'attached_assets',
   'create-zip.js',
   'hackfiles-deployment.zip',
+  'download.html',
   /\.log$/,
 ];
 
+// Critical config files that must be included
+const criticalFiles = [
+  'vite.config.ts',
+  'tsconfig.json',
+  'drizzle.config.ts',
+  'tailwind.config.ts',
+  'postcss.config.js',
+  'ecosystem.config.js',
+  'package.json',
+  'package-lock.json',
+];
+
 function shouldExclude(filePath) {
+  // Never exclude critical config files
+  const fileName = path.basename(filePath);
+  if (criticalFiles.includes(fileName)) {
+    return false;
+  }
+
   return excludePatterns.some(pattern => {
     if (pattern instanceof RegExp) {
       return pattern.test(filePath);
