@@ -15,6 +15,7 @@ import { CreateFolderDialog } from '@/components/CreateFolderDialog';
 import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { FileUploadZone } from '@/components/FileUploadZone';
 import { FileSearchBar } from '@/components/FileSearchBar';
+import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { FolderPlus, Upload, LogOut, FolderOpen, Loader2 } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
 
@@ -28,6 +29,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState('');
   const [fileType, setFileType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [fileToPreview, setFileToPreview] = useState<FileMetadata | null>(null);
 
   const { data: files = [], isLoading: filesLoading, error } = useQuery<FileMetadata[]>({
     queryKey: ['/api/files', currentPath, search, fileType, dateRange],
@@ -419,12 +421,18 @@ export default function Dashboard() {
                   onDownload={handleDownload}
                   onDelete={setFileToDelete}
                   onNavigate={(file) => setCurrentPath(file.path + file.name + '/')}
+                  onPreview={setFileToPreview}
                 />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      <FilePreviewModal
+        file={fileToPreview}
+        onClose={() => setFileToPreview(null)}
+      />
 
       <CreateFolderDialog
         open={showCreateFolder}

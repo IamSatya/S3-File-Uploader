@@ -1,4 +1,4 @@
-import { MoreVertical, Download, Trash2, Folder, FileText, Image as ImageIcon, Video, Music, FileArchive, File } from 'lucide-react';
+import { MoreVertical, Download, Trash2, Folder, FileText, Image as ImageIcon, Video, Music, FileArchive, File, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ interface FileCardProps {
   onDownload: (file: FileMetadata) => void;
   onDelete: (file: FileMetadata) => void;
   onNavigate: (file: FileMetadata) => void;
+  onPreview?: (file: FileMetadata) => void;
 }
 
 function getFileIcon(mimeType: string | null, isFolder: boolean) {
@@ -31,9 +32,25 @@ function getFileIcon(mimeType: string | null, isFolder: boolean) {
   return File;
 }
 
-export function FileCard({ file, onDownload, onDelete, onNavigate }: FileCardProps) {
+export function FileCard({ file, onDownload, onDelete, onNavigate, onPreview }: FileCardProps) {
   const Icon = getFileIcon(file.mimeType, file.isFolder);
   const iconColor = file.isFolder ? 'text-primary' : 'text-muted-foreground';
+
+  const isPreviewable = !file.isFolder && (
+    file.mimeType?.startsWith('image/') ||
+    file.mimeType === 'application/pdf' ||
+    file.mimeType?.startsWith('text/') ||
+    file.mimeType === 'application/json' ||
+    file.name.endsWith('.md') ||
+    file.name.endsWith('.txt') ||
+    file.name.endsWith('.json') ||
+    file.name.endsWith('.js') ||
+    file.name.endsWith('.ts') ||
+    file.name.endsWith('.tsx') ||
+    file.name.endsWith('.jsx') ||
+    file.name.endsWith('.css') ||
+    file.name.endsWith('.html')
+  );
 
   const handleClick = () => {
     if (file.isFolder) {
@@ -78,6 +95,18 @@ export function FileCard({ file, onDownload, onDelete, onNavigate }: FileCardPro
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {isPreviewable && onPreview && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPreview(file);
+                  }}
+                  data-testid={`button-preview-${file.id}`}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  Preview
+                </DropdownMenuItem>
+              )}
               {!file.isFolder && (
                 <DropdownMenuItem
                   onClick={(e) => {
