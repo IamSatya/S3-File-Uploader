@@ -1,0 +1,43 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# ls -la *.ts *.js *.json 2>/dev/null | grep config
+-rw-r--r-- 1 root root    657 Oct 29 16:18 tsconfig.json
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles# npm install
+npm warn deprecated @esbuild-kit/esm-loader@2.6.5: Merged into tsx: https://tsx.is
+npm warn deprecated @esbuild-kit/core-utils@3.3.2: Merged into tsx: https://tsx.is
+
+added 625 packages, and audited 626 packages in 7s
+
+70 packages are looking for funding
+  run `npm fund` for details
+
+8 vulnerabilities (3 low, 5 moderate)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+root@drivetechnoidentityorg:/var/www/hackfiles# ls
+client           design_guidelines.md  nginx.conf    package-lock.json     replit.md  shared
+components.json  docker-compose.yml    node_modules  QUICKSTART.md         scripts    tsconfig.json
+DEPLOYMENT.md    Dockerfile            package.json  README-DEPLOYMENT.md  server
+root@drivetechnoidentityorg:/var/www/hackfiles# npm run build
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+✓ 0 modules transformed.
+x Build failed in 10ms
+error during build:
+Could not resolve entry module "index.html".
+    at getRollupError (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/parseAst.js:396:41)
+    at error (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/parseAst.js:392:42)
+    at ModuleLoader.loadEntryModule (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:20086:20)
+    at async Promise.all (index 0)
+root@drivetechnoidentityorg:/var/www/hackfiles#

@@ -17,9 +17,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
 
-  // Download route for deployment ZIP
+  // Download route for deployment ZIP (with cache-busting)
   app.get('/download-deployment', (req, res) => {
     const filePath = '/home/runner/workspace/hackfiles-deployment.zip';
+    
+    // Prevent caching
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
     res.download(filePath, 'hackfiles-deployment.zip', (err) => {
       if (err) {
         console.error('Error downloading file:', err);
