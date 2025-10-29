@@ -1,0 +1,157 @@
+
+root@drivetechnoidentityorg:/var/www/hackfiles# cd ..
+root@drivetechnoidentityorg:/var/www# rm -rf hackfiles/
+root@drivetechnoidentityorg:/var/www# ls
+root@drivetechnoidentityorg:/var/www# cd /var/www/
+wget https://1c004f28-1f04-4e74-a3b0-52034d75cdac.kirk.prod.repl.run/download-deployment -O hackfiles-deployment.zip
+--2025-10-29 17:27:22--  https://1c004f28-1f04-4e74-a3b0-52034d75cdac.kirk.prod.repl.run/download-deployment
+Resolving 1c004f28-1f04-4e74-a3b0-52034d75cdac.kirk.prod.repl.run (1c004f28-1f04-4e74-a3b0-52034d75cdac.kirk.prod.repl.run)... 34.168.219.174
+Connecting to 1c004f28-1f04-4e74-a3b0-52034d75cdac.kirk.prod.repl.run (1c004f28-1f04-4e74-a3b0-52034d75cdac.kirk.prod.repl.run)|34.168.219.174|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2853196 (2.7M) [application/zip]
+Saving to: ‘hackfiles-deployment.zip’
+
+hackfiles-deployment.zip     100%[==============================================>]   2.72M  1.64MB/s    in 1.7s
+
+2025-10-29 17:27:26 (1.64 MB/s) - ‘hackfiles-deployment.zip’ saved [2853196/2853196]
+
+root@drivetechnoidentityorg:/var/www# unzip hackfiles-deployment.zip -d hackfiles
+cd hackfiles
+Archive:  hackfiles-deployment.zip
+   creating: hackfiles/.local/
+   creating: hackfiles/.local/state/
+   creating: hackfiles/.local/state/replit/
+   creating: hackfiles/.local/state/replit/agent/
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_07283202ec1cf931666090e67a7acba905b2b423.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_1b70813b2e64b658948abbbf440ff75aafea59b5.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_20bfa8a5eca75532b4cdf9637d34b34c63a2b402.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_2827025d4266afb943fa79aa8b52d932f8e79da0.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_60df00c7ca883620fb512fb150b32eb011c1716d.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_73212289a31dc74b98d58f9c9ae90e1e4c10b5d6.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_7b2b6d4325a42452d6673a1bc5439d8f31bf9a99.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_a906828c1071cd685001a6f8418f7b128ce66341.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_b6ebdbd570ff44e80643243afcdd6fe34b57920e.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_bdeb827afb1c13a2a6fcbe5cb7bf7757827c6db1.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_c47729db8a6fda968a1675a4ada8e74d38776f68.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_c5092da8b2cd43c51feb93715e37a0eb26a60ad3.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_d759acccd9403dc49a3d77a2e47dd13234f831c5.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_d920f19fb40dbe7ef0630a70b953b93015f7b439.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_fd1f3a9e3ecf261317982e11488e88635a8f207a.bin
+ extracting: hackfiles/.local/state/replit/agent/.agent_state_main.bin
+ extracting: hackfiles/.local/state/replit/agent/.latest.json
+ extracting: hackfiles/.local/state/replit/agent/repl_state.bin
+   creating: hackfiles/.upm/
+ extracting: hackfiles/.upm/store.json
+ extracting: hackfiles/DEPLOYMENT.md
+ extracting: hackfiles/Dockerfile
+ extracting: hackfiles/QUICKSTART.md
+ extracting: hackfiles/README-DEPLOYMENT.md
+   creating: hackfiles/client/
+ extracting: hackfiles/client/index.html
+   creating: hackfiles/client/public/
+ extracting: hackfiles/client/public/favicon.png
+   creating: hackfiles/client/src/
+ extracting: hackfiles/client/src/App.tsx
+   creating: hackfiles/client/src/components/
+ extracting: hackfiles/client/src/components/Breadcrumb.tsx
+ extracting: hackfiles/client/src/components/BulkActionBar.tsx
+ extracting: hackfiles/client/src/components/CountdownTimer.tsx
+ extracting: hackfiles/client/src/components/CreateFolderDialog.tsx
+ extracting: hackfiles/client/src/components/DeleteConfirmDialog.tsx
+ extracting: hackfiles/client/src/components/FileCard.tsx
+ extracting: hackfiles/client/src/components/FilePreviewModal.tsx
+ extracting: hackfiles/client/src/components/FileSearchBar.tsx
+ extracting: hackfiles/client/src/components/FileUploadZone.tsx
+ extracting: hackfiles/client/src/components/WelcomeInstructions.tsx
+   creating: hackfiles/client/src/components/ui/
+ extracting: hackfiles/client/src/components/ui/accordion.tsx
+ extracting: hackfiles/client/src/components/ui/alert-dialog.tsx
+ extracting: hackfiles/client/src/components/ui/alert.tsx
+ extracting: hackfiles/client/src/components/ui/aspect-ratio.tsx
+ extracting: hackfiles/client/src/components/ui/avatar.tsx
+ extracting: hackfiles/client/src/components/ui/badge.tsx
+ extracting: hackfiles/client/src/components/ui/breadcrumb.tsx
+ extracting: hackfiles/client/src/components/ui/button.tsx
+ extracting: hackfiles/client/src/components/ui/calendar.tsx
+ extracting: hackfiles/client/src/components/ui/card.tsx
+ extracting: hackfiles/client/src/components/ui/carousel.tsx
+ extracting: hackfiles/client/src/components/ui/chart.tsx
+ extracting: hackfiles/client/src/components/ui/checkbox.tsx
+ extracting: hackfiles/client/src/components/ui/collapsible.tsx
+ extracting: hackfiles/client/src/components/ui/command.tsx
+ extracting: hackfiles/client/src/components/ui/context-menu.tsx
+ extracting: hackfiles/client/src/components/ui/dialog.tsx
+ extracting: hackfiles/client/src/components/ui/drawer.tsx
+ extracting: hackfiles/client/src/components/ui/dropdown-menu.tsx
+ extracting: hackfiles/client/src/components/ui/form.tsx
+ extracting: hackfiles/client/src/components/ui/hover-card.tsx
+ extracting: hackfiles/client/src/components/ui/input-otp.tsx
+ extracting: hackfiles/client/src/components/ui/input.tsx
+ extracting: hackfiles/client/src/components/ui/label.tsx
+ extracting: hackfiles/client/src/components/ui/menubar.tsx
+ extracting: hackfiles/client/src/components/ui/navigation-menu.tsx
+ extracting: hackfiles/client/src/components/ui/pagination.tsx
+ extracting: hackfiles/client/src/components/ui/popover.tsx
+ extracting: hackfiles/client/src/components/ui/progress.tsx
+ extracting: hackfiles/client/src/components/ui/radio-group.tsx
+ extracting: hackfiles/client/src/components/ui/resizable.tsx
+ extracting: hackfiles/client/src/components/ui/scroll-area.tsx
+ extracting: hackfiles/client/src/components/ui/select.tsx
+ extracting: hackfiles/client/src/components/ui/separator.tsx
+ extracting: hackfiles/client/src/components/ui/sheet.tsx
+ extracting: hackfiles/client/src/components/ui/sidebar.tsx
+ extracting: hackfiles/client/src/components/ui/skeleton.tsx
+ extracting: hackfiles/client/src/components/ui/slider.tsx
+ extracting: hackfiles/client/src/components/ui/switch.tsx
+ extracting: hackfiles/client/src/components/ui/table.tsx
+ extracting: hackfiles/client/src/components/ui/tabs.tsx
+ extracting: hackfiles/client/src/components/ui/textarea.tsx
+ extracting: hackfiles/client/src/components/ui/toast.tsx
+ extracting: hackfiles/client/src/components/ui/toaster.tsx
+ extracting: hackfiles/client/src/components/ui/toggle-group.tsx
+ extracting: hackfiles/client/src/components/ui/toggle.tsx
+ extracting: hackfiles/client/src/components/ui/tooltip.tsx
+   creating: hackfiles/client/src/hooks/
+ extracting: hackfiles/client/src/hooks/use-mobile.tsx
+ extracting: hackfiles/client/src/hooks/use-toast.ts
+ extracting: hackfiles/client/src/hooks/useAuth.ts
+ extracting: hackfiles/client/src/index.css
+   creating: hackfiles/client/src/lib/
+ extracting: hackfiles/client/src/lib/authUtils.ts
+ extracting: hackfiles/client/src/lib/formatUtils.ts
+ extracting: hackfiles/client/src/lib/queryClient.ts
+ extracting: hackfiles/client/src/lib/utils.ts
+ extracting: hackfiles/client/src/main.tsx
+   creating: hackfiles/client/src/pages/
+ extracting: hackfiles/client/src/pages/Admin.tsx
+ extracting: hackfiles/client/src/pages/Dashboard.tsx
+ extracting: hackfiles/client/src/pages/Landing.tsx
+ extracting: hackfiles/client/src/pages/not-found.tsx
+ extracting: hackfiles/components.json
+ extracting: hackfiles/design_guidelines.md
+ extracting: hackfiles/docker-compose.yml
+ extracting: hackfiles/nginx.conf
+ extracting: hackfiles/package-lock.json
+ extracting: hackfiles/package.json
+ extracting: hackfiles/replit.md
+   creating: hackfiles/scripts/
+ extracting: hackfiles/scripts/check-env.js
+ extracting: hackfiles/scripts/create-admin.js
+   creating: hackfiles/server/
+ extracting: hackfiles/server/auth.ts
+ extracting: hackfiles/server/db.ts
+ extracting: hackfiles/server/index.ts
+   creating: hackfiles/server/middleware/
+ extracting: hackfiles/server/middleware/admin.ts
+ extracting: hackfiles/server/replitAuth.ts
+ extracting: hackfiles/server/routes.ts
+ extracting: hackfiles/server/s3Client.ts
+ extracting: hackfiles/server/storage.ts
+ extracting: hackfiles/server/vite.ts
+   creating: hackfiles/shared/
+ extracting: hackfiles/shared/schema.ts
+ extracting: hackfiles/tsconfig.json
+root@drivetechnoidentityorg:/var/www/hackfiles# ls -la *.ts *.js *.json | grep config
+ls: cannot access '*.ts': No such file or directory
+ls: cannot access '*.js': No such file or directory
+-rw-r--r-- 1 root root    657 Oct 29 16:18 tsconfig.json
