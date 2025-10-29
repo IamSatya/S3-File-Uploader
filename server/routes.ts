@@ -51,6 +51,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Stream ZIP file directly with unique URL
+  app.get('/get-deployment-package', async (req, res) => {
+    const fs = await import('fs');
+    const filePath = '/home/runner/workspace/hackfiles-deployment.zip';
+    
+    console.log('[DOWNLOAD] Request received for deployment package');
+    
+    try {
+      const stat = fs.statSync(filePath);
+      console.log(`[DOWNLOAD] File found, size: ${stat.size} bytes`);
+      
+      // Set headers for download
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="hackfiles-deployment.zip"');
+      res.setHeader('Content-Length', stat.size);
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Stream file
+      const readStream = fs.createReadStream(filePath);
+      readStream.pipe(res);
+      
+      readStream.on('end', () => {
+        console.log('[DOWNLOAD] File sent successfully');
+      });
+      
+      readStream.on('error', (err) => {
+        console.error('[DOWNLOAD] Stream error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: 'Error streaming file' });
+        }
+      });
+    } catch (err) {
+      console.error('[DOWNLOAD] Error:', err);
+      res.status(404).json({ message: 'File not found' });
+    }
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
