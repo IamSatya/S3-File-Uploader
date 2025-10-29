@@ -1,6 +1,7 @@
 import { MoreVertical, Download, Trash2, Folder, FileText, Image as ImageIcon, Video, Music, FileArchive, File, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +17,9 @@ interface FileCardProps {
   onDelete: (file: FileMetadata) => void;
   onNavigate: (file: FileMetadata) => void;
   onPreview?: (file: FileMetadata) => void;
+  isSelected?: boolean;
+  onSelect?: (file: FileMetadata, selected: boolean) => void;
+  selectionMode?: boolean;
 }
 
 function getFileIcon(mimeType: string | null, isFolder: boolean) {
@@ -32,7 +36,7 @@ function getFileIcon(mimeType: string | null, isFolder: boolean) {
   return File;
 }
 
-export function FileCard({ file, onDownload, onDelete, onNavigate, onPreview }: FileCardProps) {
+export function FileCard({ file, onDownload, onDelete, onNavigate, onPreview, isSelected, onSelect, selectionMode }: FileCardProps) {
   const Icon = getFileIcon(file.mimeType, file.isFolder);
   const iconColor = file.isFolder ? 'text-primary' : 'text-muted-foreground';
 
@@ -53,19 +57,36 @@ export function FileCard({ file, onDownload, onDelete, onNavigate, onPreview }: 
   );
 
   const handleClick = () => {
-    if (file.isFolder) {
+    if (selectionMode && onSelect) {
+      onSelect(file, !isSelected);
+    } else if (file.isFolder) {
       onNavigate(file);
+    }
+  };
+
+  const handleCheckboxChange = (checked: boolean) => {
+    if (onSelect) {
+      onSelect(file, checked);
     }
   };
 
   return (
     <Card
-      className={`hover-elevate ${file.isFolder ? 'cursor-pointer' : ''}`}
+      className={`hover-elevate ${file.isFolder && !selectionMode ? 'cursor-pointer' : ''} ${isSelected ? 'ring-2 ring-primary' : ''}`}
       onClick={handleClick}
       data-testid={`file-card-${file.id}`}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
+          {selectionMode && (
+            <Checkbox
+              checked={isSelected}
+              onCheckedChange={handleCheckboxChange}
+              onClick={(e) => e.stopPropagation()}
+              data-testid={`checkbox-select-${file.id}`}
+              className="mt-3"
+            />
+          )}
           <div className="flex items-start gap-3 min-w-0 flex-1">
             <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted ${iconColor}`}>
               <Icon className="h-5 w-5" />

@@ -375,6 +375,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk delete route
+  app.post('/api/files/bulk-delete', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { fileIds } = req.body;
+      
+      if (!Array.isArray(fileIds) || fileIds.length === 0) {
+        return res.status(400).json({ message: "Invalid file IDs" });
+      }
+      
+      let deletedCount = 0;
+      const errors: string[] = [];
+      
+      for (const fileId of fileIds) {
+        try {
+          const file = await storage.getFileById(fileId, userId);
+          
+          if (!file) {
+            errors.push(`File ${fileId} not found`);
+            continue;
+          }
+          
+          if (file.isFolder) {
+            const folderPrefix = file.s3Key;
+            await deleteFolder(folderPrefix);
+            await storage.deleteFilesByPrefix(userId, file.path + file.name + '/');
+          } else {
+            await deleteFromS3(file.s3Key);
+          }
+          
+          await storage.deleteFile(fileId, userId);
+          deletedCount++;
+        } catch (error) {
+          errors.push(`Failed to delete file ${fileId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+      
+      res.json({ 
+        message: `Deleted ${deletedCount} file(s)`,
+        deletedCount,
+        errors: errors.length > 0 ? errors : undefined
+      });
+    } catch (error) {
+      console.error("Error in bulk delete:", error);
+      res.status(500).json({ message: "Failed to delete files" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

@@ -16,8 +16,10 @@ import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
 import { FileUploadZone } from '@/components/FileUploadZone';
 import { FileSearchBar } from '@/components/FileSearchBar';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
-import { FolderPlus, Upload, LogOut, FolderOpen, Loader2 } from 'lucide-react';
+import { BulkActionBar } from '@/components/BulkActionBar';
+import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
+import JSZip from 'jszip';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -30,6 +32,8 @@ export default function Dashboard() {
   const [fileType, setFileType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
   const [fileToPreview, setFileToPreview] = useState<FileMetadata | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
 
   const { data: files = [], isLoading: filesLoading, error } = useQuery<FileMetadata[]>({
     queryKey: ['/api/files', currentPath, search, fileType, dateRange],
@@ -47,6 +51,12 @@ export default function Dashboard() {
       return response.json();
     },
   });
+
+  // Clear selection when path or files change
+  useEffect(() => {
+    setSelectedFiles(new Set());
+    setSelectionMode(false);
+  }, [currentPath]);
 
   // Handle query errors
   useEffect(() => {
@@ -230,6 +240,38 @@ export default function Dashboard() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (fileIds: string[]) => {
+      const response = await apiRequest('POST', '/api/files/bulk-delete', { fileIds });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
+      
+      if (data.errors && data.errors.length > 0) {
+        toast({
+          title: "Partial deletion",
+          description: `Deleted ${data.deletedCount} file(s), but ${data.errors.length} failed. Selection kept for retry.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Deleted ${data.deletedCount} file(s) successfully`,
+        });
+        setSelectedFiles(new Set());
+        setSelectionMode(false);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete files",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDownload = async (file: FileMetadata) => {
     try {
       const response = await fetch(`/api/files/download/${file.id}`);
@@ -259,6 +301,104 @@ export default function Dashboard() {
       uploadFolderMutation.mutate(files);
     }
     e.target.value = '';
+  };
+
+  const handleFileSelect = (file: FileMetadata, selected: boolean) => {
+    setSelectedFiles(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(file.id);
+      } else {
+        newSet.delete(file.id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkDownload = async () => {
+    try {
+      const zip = new JSZip();
+      const selectedFilesList = files.filter(f => selectedFiles.has(f.id) && !f.isFolder);
+      
+      if (selectedFilesList.length === 0) {
+        toast({
+          title: "No files selected",
+          description: "Please select at least one file (folders cannot be downloaded in bulk)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const downloadPromises = selectedFilesList.map(async (file) => {
+        try {
+          const response = await fetch(`/api/files/download/${file.id}`);
+          if (!response.ok) throw new Error(`Failed to download ${file.name}`);
+          const blob = await response.blob();
+          return { file, blob, success: true };
+        } catch (error) {
+          return { file, blob: null, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      });
+
+      const results = await Promise.all(downloadPromises);
+      const failures = results.filter(r => !r.success);
+      const successes = results.filter(r => r.success);
+
+      if (failures.length > 0) {
+        toast({
+          title: "Partial download failure",
+          description: `Failed to download ${failures.length} of ${selectedFilesList.length} file(s)`,
+          variant: "destructive",
+        });
+      }
+
+      if (successes.length === 0) {
+        toast({
+          title: "Download failed",
+          description: "Could not download any files",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      successes.forEach(({ file, blob }) => {
+        if (blob) zip.file(file.name, blob);
+      });
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = window.URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'files.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      if (failures.length === 0) {
+        toast({
+          title: "Success",
+          description: "All files downloaded successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download files",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedFiles.size > 0) {
+      bulkDeleteMutation.mutate(Array.from(selectedFiles));
+    }
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedFiles(new Set());
   };
 
   const getUserInitials = () => {
@@ -331,9 +471,18 @@ export default function Dashboard() {
               
               <div className="flex flex-wrap items-center gap-2">
               <Button
+                onClick={toggleSelectionMode}
+                variant={selectionMode ? "default" : "outline"}
+                data-testid="button-toggle-selection"
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                {selectionMode ? 'Cancel Select' : 'Select'}
+              </Button>
+
+              <Button
                 onClick={() => setShowCreateFolder(true)}
                 variant="outline"
-                disabled={uploadDisabled}
+                disabled={uploadDisabled || selectionMode}
                 data-testid="button-create-folder"
               >
                 <FolderPlus className="mr-2 h-4 w-4" />
@@ -342,7 +491,7 @@ export default function Dashboard() {
               
               <Button
                 asChild
-                disabled={uploadDisabled}
+                disabled={uploadDisabled || selectionMode}
                 data-testid="button-upload-files"
               >
                 <label className="cursor-pointer">
@@ -353,14 +502,14 @@ export default function Dashboard() {
                     multiple
                     onChange={(e) => e.target.files && uploadMutation.mutate(e.target.files)}
                     className="sr-only"
-                    disabled={uploadDisabled}
+                    disabled={uploadDisabled || selectionMode}
                   />
                 </label>
               </Button>
 
               <Button
                 asChild
-                disabled={uploadDisabled}
+                disabled={uploadDisabled || selectionMode}
                 data-testid="button-upload-folder"
               >
                 <label className="cursor-pointer">
@@ -373,7 +522,7 @@ export default function Dashboard() {
                     directory=""
                     onChange={handleFolderSelect}
                     className="sr-only"
-                    disabled={uploadDisabled}
+                    disabled={uploadDisabled || selectionMode}
                   />
                 </label>
               </Button>
@@ -422,12 +571,25 @@ export default function Dashboard() {
                   onDelete={setFileToDelete}
                   onNavigate={(file) => setCurrentPath(file.path + file.name + '/')}
                   onPreview={setFileToPreview}
+                  selectionMode={selectionMode}
+                  isSelected={selectedFiles.has(file.id)}
+                  onSelect={handleFileSelect}
                 />
               ))}
             </div>
           )}
         </div>
       </main>
+
+      {selectionMode && selectedFiles.size > 0 && (
+        <BulkActionBar
+          selectedCount={selectedFiles.size}
+          onDownload={handleBulkDownload}
+          onDelete={handleBulkDelete}
+          onCancel={toggleSelectionMode}
+          isDeleting={bulkDeleteMutation.isPending}
+        />
+      )}
 
       <FilePreviewModal
         file={fileToPreview}
