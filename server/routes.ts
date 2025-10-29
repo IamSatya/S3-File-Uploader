@@ -51,22 +51,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post('/api/timer-config', isAuthenticated, async (req: any, res) => {
-    try {
-      const { deadline, isActive } = req.body;
-      
-      const config = await storage.upsertTimerConfig({
-        id: "default",
-        deadline: new Date(deadline),
-        isActive: isActive ?? true,
-      });
-      
-      res.json(config);
-    } catch (error) {
-      console.error("Error updating timer config:", error);
-      res.status(500).json({ message: "Failed to update timer config" });
-    }
-  });
+  // Timer config is read-only via API
+  // To update the deadline, update directly in the database or via admin tool
+  // This prevents participants from extending the upload deadline
 
   // Check if uploads are allowed
   async function checkUploadAllowed() {
