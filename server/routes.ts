@@ -34,6 +34,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // New versioned download endpoint to bypass proxy cache
+  app.get('/download-deployment-v2', (req, res) => {
+    const filePath = '/home/runner/workspace/hackfiles-deployment.zip';
+    
+    // Prevent caching
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    
+    res.download(filePath, 'hackfiles-deployment.zip', (err) => {
+      if (err) {
+        console.error('Error downloading file:', err);
+        res.status(404).json({ message: 'File not found' });
+      }
+    });
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
