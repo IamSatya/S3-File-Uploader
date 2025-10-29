@@ -7,6 +7,7 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { uploadToS3, downloadFromS3, deleteFromS3, deleteFolder } from "./s3Client";
 import { createFolderSchema } from "@shared/schema";
 import { Readable } from "stream";
+import { requireAdmin } from "./middleware/admin";
 
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
@@ -51,9 +52,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Timer config is read-only via API
-  // To update the deadline, update directly in the database or via admin tool
-  // This prevents participants from extending the upload deadline
+  // Admin routes
+  app.get('/api/admin/stats', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const [userStats, totalStats] = await Promise.all([
+        storage.getUserStorageStats(),
+        storage.getTotalStats(),
+      ]);
+      
+      res.json({
+        userStats,
+        totalStats,
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
+  app.get('/api/admin/timer', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const config = await storage.getTimerConfig();
+      res.json(config);
+    } catch (error) {
+      console.error("Error fetching timer config:", error);
+      res.status(500).json({ message: "Failed to fetch timer config" });
+    }
+  });
+
+  app.post('/api/admin/timer', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { deadline, isActive } = req.body;
+      
+      if (!deadline) {
+        return res.status(400).json({ message: "Deadline is required" });
+      }
+      
+      const config = await storage.upsertTimerConfig({
+        id: "default",
+        deadline: new Date(deadline),
+        isActive: isActive !== undefined ? isActive : true,
+      });
+      
+      res.json(config);
+    } catch (error) {
+      console.error("Error updating timer config:", error);
+      res.status(500).json({ message: "Failed to update timer config" });
+    }
+  });
 
   // Check if uploads are allowed
   async function checkUploadAllowed() {

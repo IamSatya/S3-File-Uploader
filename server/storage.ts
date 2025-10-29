@@ -28,6 +28,11 @@ export interface IStorage {
   // Timer operations
   getTimerConfig(): Promise<TimerConfig | undefined>;
   upsertTimerConfig(config: UpsertTimerConfig): Promise<TimerConfig>;
+  
+  // Admin operations
+  getAllUsers(): Promise<User[]>;
+  getUserStorageStats(): Promise<{ userId: string; email: string | null; firstName: string | null; lastName: string | null; totalFiles: number; totalSize: number }[]>;
+  getTotalStats(): Promise<{ totalUsers: number; totalFiles: number; totalSize: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -121,6 +126,53 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return updated;
+  }
+
+  // Admin operations
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getUserStorageStats() {
+    const allUsers = await db.select().from(users);
+    
+    const stats = await Promise.all(
+      allUsers.map(async (user) => {
+        const files = await db
+          .select()
+          .from(fileMetadata)
+          .where(and(eq(fileMetadata.userId, user.id), eq(fileMetadata.isFolder, false)));
+        
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        
+        return {
+          userId: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          totalFiles: files.length,
+          totalSize,
+        };
+      })
+    );
+    
+    return stats;
+  }
+
+  async getTotalStats() {
+    const allUsers = await db.select().from(users);
+    const allFiles = await db
+      .select()
+      .from(fileMetadata)
+      .where(eq(fileMetadata.isFolder, false));
+    
+    const totalSize = allFiles.reduce((sum, file) => sum + file.size, 0);
+    
+    return {
+      totalUsers: allUsers.length,
+      totalFiles: allFiles.length,
+      totalSize,
+    };
   }
 }
 
