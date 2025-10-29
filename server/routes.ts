@@ -17,6 +17,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
 
+  // Download route for deployment ZIP
+  app.get('/download-deployment', (req, res) => {
+    const filePath = '/home/runner/workspace/hackfiles-deployment.zip';
+    res.download(filePath, 'hackfiles-deployment.zip', (err) => {
+      if (err) {
+        console.error('Error downloading file:', err);
+        res.status(404).json({ message: 'File not found' });
+      }
+    });
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
