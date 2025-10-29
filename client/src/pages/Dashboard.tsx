@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { isUnauthorizedError } from '@/lib/authUtils';
@@ -17,12 +18,13 @@ import { FileUploadZone } from '@/components/FileUploadZone';
 import { FileSearchBar } from '@/components/FileSearchBar';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { BulkActionBar } from '@/components/BulkActionBar';
-import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare } from 'lucide-react';
+import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
 import JSZip from 'jszip';
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const { toast } = useToast();
   const [currentPath, setCurrentPath] = useState('/');
   const [showInstructions, setShowInstructions] = useState(true);
@@ -440,6 +442,12 @@ export default function Dashboard() {
                     <p className="text-xs text-muted-foreground">{user?.email}</p>
                   </div>
                   <DropdownMenuSeparator />
+                  {user?.isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="link-admin">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem asChild>
                     <a href="/api/logout" data-testid="button-logout">
                       <LogOut className="mr-2 h-4 w-4" />
