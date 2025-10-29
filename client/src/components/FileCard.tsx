@@ -1,0 +1,110 @@
+import { MoreVertical, Download, Trash2, Folder, FileText, Image as ImageIcon, Video, Music, FileArchive, File } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { formatFileSize, formatDate } from '@/lib/formatUtils';
+import type { FileMetadata } from '@shared/schema';
+
+interface FileCardProps {
+  file: FileMetadata;
+  onDownload: (file: FileMetadata) => void;
+  onDelete: (file: FileMetadata) => void;
+  onNavigate: (file: FileMetadata) => void;
+}
+
+function getFileIcon(mimeType: string | null, isFolder: boolean) {
+  if (isFolder) return Folder;
+  
+  if (!mimeType) return FileText;
+  
+  if (mimeType.startsWith('image/')) return ImageIcon;
+  if (mimeType.startsWith('video/')) return Video;
+  if (mimeType.startsWith('audio/')) return Music;
+  if (mimeType.includes('zip') || mimeType.includes('compressed')) return FileArchive;
+  if (mimeType.includes('text/')) return FileText;
+  
+  return File;
+}
+
+export function FileCard({ file, onDownload, onDelete, onNavigate }: FileCardProps) {
+  const Icon = getFileIcon(file.mimeType, file.isFolder);
+  const iconColor = file.isFolder ? 'text-primary' : 'text-muted-foreground';
+
+  const handleClick = () => {
+    if (file.isFolder) {
+      onNavigate(file);
+    }
+  };
+
+  return (
+    <Card
+      className={`hover-elevate ${file.isFolder ? 'cursor-pointer' : ''}`}
+      onClick={handleClick}
+      data-testid={`file-card-${file.id}`}
+    >
+      <CardContent className="p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3 min-w-0 flex-1">
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted ${iconColor}`}>
+              <Icon className="h-5 w-5" />
+            </div>
+            
+            <div className="min-w-0 flex-1 space-y-1">
+              <h3 className="font-medium text-sm leading-none truncate" title={file.name} data-testid={`file-name-${file.id}`}>
+                {file.name}
+              </h3>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+                {!file.isFolder && <span data-testid={`file-size-${file.id}`}>{formatFileSize(file.size)}</span>}
+                {!file.isFolder && <span>•</span>}
+                <span data-testid={`file-date-${file.id}`}>{formatDate(file.createdAt!)}</span>
+              </div>
+            </div>
+          </div>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                data-testid={`button-menu-${file.id}`}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {!file.isFolder && (
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownload(file);
+                  }}
+                  data-testid={`button-download-${file.id}`}
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  Download
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(file);
+                }}
+                className="text-destructive focus:text-destructive"
+                data-testid={`button-delete-${file.id}`}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
