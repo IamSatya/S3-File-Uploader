@@ -13,6 +13,11 @@ import { requireAdmin } from "./middleware/admin";
 // Configure multer for memory storage
 const upload = multer({ storage: multer.memoryStorage() });
 
+// Helper function to sanitize email for S3 paths
+function sanitizeEmail(email: string): string {
+  return email.replace(/[@.]/g, '_');
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
@@ -320,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File listing route with search and filtering
   app.get('/api/files', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const path = (req.query.path as string) || '/';
       const search = (req.query.search as string) || '';
       const fileType = (req.query.fileType as string) || '';
