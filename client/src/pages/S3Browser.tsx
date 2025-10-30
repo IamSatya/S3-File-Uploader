@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Folder, File, ChevronRight, Home, FolderOpen, Settings } from "lucide-react";
+import { Folder, File, ChevronRight, Home, FolderOpen, Settings, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface FileWithOwner {
@@ -22,16 +24,36 @@ interface FileWithOwner {
 export default function S3Browser() {
   const [currentPath, setCurrentPath] = useState("/");
   const [, navigate] = useLocation();
+  const { user, isLoading: authLoading } = useAuth();
+  const { toast } = useToast();
 
-  const { data: files = [], isLoading } = useQuery<FileWithOwner[]>({
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!authLoading && (!user || !user.isAdmin)) {
+      toast({
+        title: "Access Denied",
+        description: "You do not have permission to access the S3 browser",
+        variant: "destructive",
+      });
+      navigate('/');
+    }
+  }, [authLoading, user, navigate, toast]);
+
+  const { data: files = [], isLoading, error } = useQuery<FileWithOwner[]>({
     queryKey: ["/api/admin/s3-browse", currentPath],
-    queryFn: async () => {
-      const params = new URLSearchParams({ path: currentPath });
-      const response = await fetch(`/api/admin/s3-browse?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch S3 content");
-      return response.json();
-    },
+    enabled: !!user?.isAdmin,
   });
+
+  // Handle API errors
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to load S3 content. Please try again.",
+        variant: "destructive",
+      });
+    }
+  }, [error, toast]);
 
   const formatFileSize = (bytes: number | null) => {
     if (bytes === null) return "—";
@@ -61,6 +83,22 @@ export default function S3Browser() {
   const folders = files.filter((f) => f.isFolder);
   const regularFiles = files.filter((f) => !f.isFolder);
 
+  // Show loading while checking auth
+  if (authLoading || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg">Loading S3 browser...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not admin (will redirect via useEffect)
+  if (!user?.isAdmin) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -87,100 +125,101 @@ export default function S3Browser() {
       </header>
 
       <main className="container mx-auto p-6 space-y-6">
-
-      {/* Breadcrumb Navigation */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleBreadcrumbClick("", -1)}
-              data-testid="breadcrumb-home"
-            >
-              <Home className="h-4 w-4" />
-            </Button>
-            {pathSegments.map((segment, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleBreadcrumbClick(segment, index)}
-                  data-testid={`breadcrumb-${segment}`}
-                >
-                  {segment}
-                </Button>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* File/Folder List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Contents</CardTitle>
-          <CardDescription>
-            {files.length === 0
-              ? "No files or folders in this location"
-              : `${folders.length} folder${folders.length !== 1 ? "s" : ""}, ${regularFiles.length} file${regularFiles.length !== 1 ? "s" : ""}`}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading...
-            </div>
-          ) : files.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              This folder is empty
-            </div>
-          ) : (
-            <div className="space-y-1">
-              {/* Folders First */}
-              {folders.map((folder) => (
-                <button
-                  key={folder.id}
-                  onClick={() => handleFolderClick(folder)}
-                  className="w-full flex items-center gap-4 p-3 rounded-md hover-elevate active-elevate-2 text-left"
-                  data-testid={`folder-${folder.name}`}
-                >
-                  <Folder className="h-5 w-5 text-primary flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{folder.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      Folder • Owner: {folder.ownerName} ({folder.ownerEmail})
-                    </div>
-                  </div>
-                </button>
-              ))}
-
-              {/* Files */}
-              {regularFiles.map((file) => (
-                <div
-                  key={file.id}
-                  className="flex items-center gap-4 p-3 rounded-md border"
-                  data-testid={`file-${file.name}`}
-                >
-                  <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium truncate">{file.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {formatFileSize(file.size)} •{" "}
-                      {file.mimeType || "Unknown type"} •{" "}
-                      Uploaded {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
-                    </div>
-                    <div className="text-sm text-muted-foreground mt-1">
-                      <span className="font-medium">Owner:</span> {file.ownerName} ({file.ownerEmail})
-                    </div>
-                  </div>
+        {/* Breadcrumb Navigation */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleBreadcrumbClick("", -1)}
+                data-testid="breadcrumb-home"
+              >
+                <Home className="h-4 w-4" />
+              </Button>
+              {pathSegments.map((segment, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleBreadcrumbClick(segment, index)}
+                    data-testid={`breadcrumb-${segment}`}
+                  >
+                    {segment}
+                  </Button>
                 </div>
               ))}
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+
+        {/* File/Folder List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Contents</CardTitle>
+            <CardDescription>
+              {files.length === 0
+                ? "No files or folders in this location"
+                : `${folders.length} folder${folders.length !== 1 ? "s" : ""}, ${regularFiles.length} file${regularFiles.length !== 1 ? "s" : ""}`}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {error ? (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                <p className="text-destructive font-medium">Failed to load S3 content</p>
+                <p className="text-sm text-muted-foreground mt-2">Please try again or contact support</p>
+              </div>
+            ) : files.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                This folder is empty
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {/* Folders First */}
+                {folders.map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => handleFolderClick(folder)}
+                    className="w-full flex items-center gap-4 p-3 rounded-md hover-elevate active-elevate-2 text-left"
+                    data-testid={`folder-${folder.name}`}
+                  >
+                    <Folder className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{folder.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Folder • Owner: {folder.ownerName} ({folder.ownerEmail})
+                      </div>
+                    </div>
+                  </button>
+                ))}
+
+                {/* Files */}
+                {regularFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center gap-4 p-3 rounded-md border"
+                    data-testid={`file-${file.name}`}
+                  >
+                    <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{file.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatFileSize(file.size)} •{" "}
+                        {file.mimeType || "Unknown type"} •{" "}
+                        Uploaded {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        <span className="font-medium">Owner:</span> {file.ownerName} ({file.ownerEmail})
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </main>
     </div>
   );
