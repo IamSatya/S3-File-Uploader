@@ -41,6 +41,16 @@ export default function S3Browser() {
 
   const { data: files = [], isLoading, error } = useQuery<FileWithOwner[]>({
     queryKey: ["/api/admin/s3-browse", currentPath],
+    queryFn: async () => {
+      const params = new URLSearchParams({ path: currentPath });
+      const res = await fetch(`/api/admin/s3-browse?${params}`, {
+        credentials: "include",
+      });
+      if (!res.ok) {
+        throw new Error("Failed to fetch S3 content");
+      }
+      return res.json();
+    },
     enabled: !!user?.isAdmin,
   });
 
