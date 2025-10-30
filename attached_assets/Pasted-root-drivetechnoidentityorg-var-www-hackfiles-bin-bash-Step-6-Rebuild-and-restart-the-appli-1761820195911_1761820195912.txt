@@ -1,0 +1,67 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# #!/bin/bash
+# Step 6: Rebuild and restart the application
+# Run this on your VPS: bash 6-rebuild-and-restart.sh
+
+cd /var/www/hackfiles
+
+echo "🔨 Building application..."
+npm run build
+
+if [ $? -eq 0 ]; then
+    echo "✅ Build successful!"
+    echo "🔄 Restarting PM2..."
+    pm2 restart index
+
+    echo ""
+    echo "✅ Deployment complete!"
+    echo ""
+    echo "📋 Next steps:"
+    echo "  1. Check logs: pm2 logs index --lines 20"
+    echo "  2. Visit: http://drive.technoidentity.org"
+    echo "  3. Login as: admin@ti.com / Admin@123456"
+    echo "  4. Click: Profile Icon → 'S3 Browser'"
+    echo ""
+else
+    echo "❌ Build failed! Check the errors above."
+    echo "📝 Your original files are backed up with .backup extension"
+    exit 1
+fi
+🔨 Building application...
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 12 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+transforming (4) src/App.tsx
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 7 modules transformed.
+x Build failed in 1.06s
+error during build:
+[vite:esbuild] Transform failed with 1 error:
+/var/www/hackfiles/client/src/pages/Dashboard.tsx:45:38: ERROR: Unterminated regular expression
+file: /var/www/hackfiles/client/src/pages/Dashboard.tsx:45:38
+
+Unterminated regular expression
+43 |                      Logout
+44 |                    </DropdownMenuItem>
+45 |                  </DropdownMenuContent>
+   |                                        ^
+46 |                </DropdownMenu>
+47 |              </div>
+
+    at failureErrorWithLog (/var/www/hackfiles/node_modules/vite/node_modules/esbuild/lib/main.js:1472:15)
+    at /var/www/hackfiles/node_modules/vite/node_modules/esbuild/lib/main.js:755:50
+    at responseCallbacks.<computed> (/var/www/hackfiles/node_modules/vite/node_modules/esbuild/lib/main.js:622:9)
+    at handleIncomingPacket (/var/www/hackfiles/node_modules/vite/node_modules/esbuild/lib/main.js:677:12)
+    at Socket.readFromStdout (/var/www/hackfiles/node_modules/vite/node_modules/esbuild/lib/main.js:600:7)
+    at Socket.emit (node:events:524:28)
+    at addChunk (node:internal/streams/readable:561:12)
+    at readableAddChunkPushByteMode (node:internal/streams/readable:512:3)
+    at Readable.push (node:internal/streams/readable:392:5)
+    at Pipe.onStreamRead (node:internal/stream_base_commons:191:23)
+❌ Build failed! Check the errors above.
+📝 Your original files are backed up with .backup extension
+logout
