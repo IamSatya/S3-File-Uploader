@@ -1,0 +1,65 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# # Generate hash
+HASH=$(node -e "require('bcrypt').hash('Admin@123456', 10).then(h => console.log(h))")
+
+# Wait for hash to generate, then insert
+sleep 2
+
+# Or do it in one command:
+psql $(cat .env | grep DATABASE_URL | cut -d'=' -f2) -c "
+INSERT INTO users (id, email, password, \"firstName\", \"lastName\", \"isAdmin\")
+VALUES (gen_random_uuid(), 'admin@ti.com', crypt('Admin@123456', gen_salt('bf')), 'Admin', 'User', true)
+ON CONFLICT (email) DO UPDATE SET password = crypt('Admin@123456', gen_salt('bf')), \"isAdmin\" = true;
+"
+ERROR:  column "firstName" of relation "users" does not exist
+LINE 2: INSERT INTO users (id, email, password, "firstName", "lastNa...
+                                                ^
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles# cd /var/www/hackfiles
+
+cat > create-admin-temp.mjs << 'EOF'
+import bcrypt from 'bcrypt';
+import pkg from 'pg';
+const { Pool } = pkg;
+
+// Get DATABASE_URL from environment or hardcode it
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://hackfiles_user:your_password@localhost:5432/hackfiles';
+
+const pool = new Pool({ connectionString: DATABASE_URL });
+
+const email = 'admin@ti.com';
+const password = 'Admin@123456';
+
+const hash = await bcrypt.hash(password, 10);
+const result = await pool.query(
+  'INSERT INTO users (id, email, password, "firstName", "lastName", "isAdmin") VALUES (gen_random_uuid(), $1, $2, $3, $4, true) ON CONFLICT (email) DO UPDATE SET password = $2, "isAdmin" = true RETURNING email, "firstName", "lastName"',
+  [email, hash, 'Admin', 'User']
+);
+
+console.log('✅ Admin created:', result.rows[0]);
+console.log('\nLogin with:');
+console.log('Email:', email);
+console.log('Password:', password);
+
+await pool.end();
+rm create-admin-temp.mjss) && node create-admin-temp.mjs
+-bash: export: `#': not a valid identifier
+-bash: export: `.env': not a valid identifier
+-bash: export: `#': not a valid identifier
+-bash: export: `(PostgreSQL)': not a valid identifier
+-bash: export: `#': not a valid identifier
+-bash: export: `(generate': not a valid identifier
+-bash: export: `string)': not a valid identifier
+-bash: export: `#': not a valid identifier
+-bash: export: `#AWS_ACCESS_KEY_ID=your-aws-access-key': not a valid identifier
+-bash: export: `#AWS_SECRET_ACCESS_KEY=your-aws-secret-key': not a valid identifier
+-bash: export: `#AWS_REGION=us-east-1': not a valid identifier
+-bash: export: `#AWS_S3_BUCKET_NAME=your-bucket-name': not a valid identifier
+-bash: export: `#': not a valid identifier
+-bash: export: `instance/role': not a valid identifier
+-bash: export: `#': not a valid identifier
+-bash: export: `(default:': not a valid identifier
+-bash: export: `5000)': not a valid identifier
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles#
+root@drivetechnoidentityorg:/var/www/hackfiles#
