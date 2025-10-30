@@ -1,0 +1,27 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# pm2 logs index --lines 10
+[TAILING] Tailing last 10 lines for [index] process (change the value with --lines option)
+/root/.pm2/logs/index-error.log last 10 lines:
+0|index    |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|index    |     at async PGStore._asyncQuery (/var/www/hackfiles/node_modules/connect-pg-simple/index.js:322:21)
+0|index    | Error: connect ECONNREFUSED 127.0.0.1:443
+0|index    |     at file:///var/www/hackfiles/node_modules/@neondatabase/serverless/index.mjs:1345:74
+0|index    |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|index    |     at async PGStore._asyncQuery (/var/www/hackfiles/node_modules/connect-pg-simple/index.js:322:21)
+0|index    | Error: connect ECONNREFUSED 127.0.0.1:443
+0|index    |     at file:///var/www/hackfiles/node_modules/@neondatabase/serverless/index.mjs:1345:74
+0|index    |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|index    |     at async PGStore._asyncQuery (/var/www/hackfiles/node_modules/connect-pg-simple/index.js:322:21)
+
+/root/.pm2/logs/index-out.log last 10 lines:
+0|index    | 10:40:39 AM [express] GET /api/files 304 in 23ms :: []
+0|index    | 10:40:44 AM [express] GET /api/auth/user 304 in 13ms :: {"id":"ca4b379a-c244-49b4-b982-309317602862",…
+0|index    | 10:40:45 AM [express] GET /api/auth/user 304 in 10ms :: {"id":"ca4b379a-c244-49b4-b982-309317602862",…
+0|index    | 10:40:49 AM [express] GET /api/auth/user 304 in 8ms :: {"id":"ca4b379a-c244-49b4-b982-309317602862","…
+0|index    | 10:40:49 AM [express] GET /api/timer-config 304 in 7ms :: {"id":"default","deadline":"2025-11-29T08:5…
+0|index    | 10:40:49 AM [express] GET /api/files 304 in 8ms :: []
+0|index    | 10:40:52 AM [express] GET /api/admin/timer 304 in 21ms :: {"id":"default","deadline":"2025-11-29T08:5…
+0|index    | 10:40:52 AM [express] GET /api/admin/files 304 in 43ms :: [{"id":"3c33e114-8446-4fc4-9a66-aa4a8f5765a…
+0|index    | 10:40:52 AM [express] GET /api/admin/users 304 in 53ms :: [{"id":"ca4b379a-c244-49b4-b982-30931760286…
+0|index    | 10:40:52 AM [express] GET /api/admin/stats 304 in 63ms :: {"userStats":[{"userId":"ca4b379a-c244-49b4…
+
+
