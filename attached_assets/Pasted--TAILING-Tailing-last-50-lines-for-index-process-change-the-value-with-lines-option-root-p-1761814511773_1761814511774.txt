@@ -1,0 +1,53 @@
+[TAILING] Tailing last 50 lines for [index] process (change the value with --lines option)
+/root/.pm2/logs/index-error.log last 50 lines:
+0|index    |     _closeTimer: null,
+0|index    |     _errorEmitted: true,
+0|index    |     _extensions: {},
+0|index    |     _paused: false,
+0|index    |     _protocol: '',
+0|index    |     _readyState: 3,
+0|index    |     _receiver: null,
+0|index    |     _sender: null,
+0|index    |     _socket: null,
+0|index    |     _bufferedAmount: 0,
+0|index    |     _isServer: false,
+0|index    |     _redirects: 0,
+0|index    |     _autoPong: true,
+0|index    |     _url: 'wss://localhost/v2',
+0|index    |     _req: null,
+0|index    |     [Symbol(shapeMode)]: false,
+0|index    |     [Symbol(kCapture)]: false
+0|index    |   },
+0|index    |   [Symbol(kType)]: 'error',
+0|index    |   [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+0|index    |       at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1611:16) {
+0|index    |     errno: -111,
+0|index    |     code: 'ECONNREFUSED',
+0|index    |     syscall: 'connect',
+0|index    |     address: '127.0.0.1',
+0|index    |     port: 443
+0|index    |   },
+0|index    |   [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+0|index    | }
+0|index    | Error fetching files: TypeError: Cannot read properties of undefined (reading 'sub')
+0|index    |     at file:///var/www/hackfiles/dist/index.js:565:38
+0|index    |     at Layer.handle [as handle_request] (/var/www/hackfiles/node_modules/express/lib/router/layer.js:95:5)
+0|index    |     at next (/var/www/hackfiles/node_modules/express/lib/router/route.js:149:13)
+0|index    |     at isAuthenticated (file:///var/www/hackfiles/dist/index.js:300:12)
+0|index    |     at Layer.handle [as handle_request] (/var/www/hackfiles/node_modules/express/lib/router/layer.js:95:5)
+0|index    |     at next (/var/www/hackfiles/node_modules/express/lib/router/route.js:149:13)
+0|index    |     at Route.dispatch (/var/www/hackfiles/node_modules/express/lib/router/route.js:119:3)
+0|index    |     at Layer.handle [as handle_request] (/var/www/hackfiles/node_modules/express/lib/router/layer.js:95:5)
+0|index    |     at /var/www/hackfiles/node_modules/express/lib/router/index.js:284:15
+0|index    |     at Function.process_params (/var/www/hackfiles/node_modules/express/lib/router/index.js:346:12)
+0|index    | Error uploading files: TypeError: Cannot read properties of undefined (reading 'sub')
+0|index    |     at file:///var/www/hackfiles/dist/index.js:618:38
+0|index    |     at Layer.handle [as handle_request] (/var/www/hackfiles/node_modules/express/lib/router/layer.js:95:5)
+0|index    |     at next (/var/www/hackfiles/node_modules/express/lib/router/route.js:149:13)
+0|index    |     at done (/var/www/hackfiles/node_modules/multer/lib/make-middleware.js:59:7)
+0|index    |     at indicateDone (/var/www/hackfiles/node_modules/multer/lib/make-middleware.js:63:68)
+0|index    |     at Multipart.<anonymous> (/var/www/hackfiles/node_modules/multer/lib/make-middleware.js:187:7)
+0|index    |     at Multipart.emit (node:events:524:28)
+0|index    |     at emitCloseNT (node:internal/streams/destroy:147:10)
+0|index    |     at process.processTicksAndRejections (node:internal/process/task_queues:81:21)
+
