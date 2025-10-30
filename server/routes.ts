@@ -95,6 +95,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Download admin update package
+  app.get('/download-admin-update', async (req, res) => {
+    const fs = await import('fs');
+    const filePath = '/home/runner/workspace/hackfiles-admin-update.tar.gz';
+    
+    console.log('[DOWNLOAD] Admin update package requested');
+    
+    try {
+      const stat = fs.statSync(filePath);
+      console.log(`[DOWNLOAD] Admin update found, size: ${stat.size} bytes`);
+      
+      // Set headers for download
+      res.setHeader('Content-Type', 'application/gzip');
+      res.setHeader('Content-Disposition', 'attachment; filename="hackfiles-admin-update.tar.gz"');
+      res.setHeader('Content-Length', stat.size);
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      // Stream file
+      const readStream = fs.createReadStream(filePath);
+      readStream.pipe(res);
+      
+      readStream.on('end', () => {
+        console.log('[DOWNLOAD] Admin update sent successfully');
+      });
+      
+      readStream.on('error', (err) => {
+        console.error('[DOWNLOAD] Stream error:', err);
+        if (!res.headersSent) {
+          res.status(500).json({ message: 'Error streaming file' });
+        }
+      });
+    } catch (err) {
+      console.error('[DOWNLOAD] Error:', err);
+      res.status(404).json({ message: 'File not found' });
+    }
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
