@@ -1,0 +1,76 @@
+##############################################################
+# HackFiles S3 Browser - VPS Deployment Commands
+# Copy these commands and paste into your VPS terminal
+##############################################################
+
+# Step 1: SSH into your VPS
+# ssh root@drivetechnoidentity.org
+
+# Step 2: Navigate to project directory
+cd /var/www/hackfiles
+
+# Step 3: Create backup (recommended)
+tar -czf backup-s3browser-$(date +%Y%m%d-%H%M%S).tar.gz server client
+
+# Step 4: Download the deployment files using wget or curl
+# You'll need to upload the ZIP file manually or use these individual file updates:
+
+##############################################################
+# OPTION A: Manual File Updates (Copy-Paste Method)
+##############################################################
+
+# NOTE: The complete files are too long to paste here.
+# Use OPTION B below (wget method) instead.
+
+##############################################################
+# OPTION B: Direct Download from Replit (RECOMMENDED)
+##############################################################
+
+# This requires the Replit workspace to be accessible.
+# Since you can't download the ZIP, I'll provide an alternative:
+
+# 1. Go to this Replit workspace
+# 2. Open each file below in the editor
+# 3. Copy the entire content
+# 4. SSH to your VPS and create/update each file
+
+FILES TO UPDATE:
+1. server/routes.ts
+2. client/src/App.tsx
+3. client/src/pages/Dashboard.tsx
+4. client/src/pages/Admin.tsx
+5. client/src/pages/S3Browser.tsx (NEW FILE - create this)
+
+##############################################################
+# OPTION C: Simple Git Method (If you're using Git)
+##############################################################
+
+# If your VPS code is in a Git repository:
+cd /var/www/hackfiles
+git add .
+git commit -m "Backup before S3 browser update"
+# Then manually copy the 5 files above from Replit to VPS
+
+##############################################################
+# After files are updated, run these commands:
+##############################################################
+
+# Rebuild the application
+npm run build
+
+# Restart PM2
+pm2 restart index
+
+# Check logs
+pm2 logs index --lines 20
+
+# Test the feature
+# Visit: http://drive.technoidentity.org
+# Login as: admin@ti.com / Admin@123456
+# Click: Profile Icon → "S3 Browser"
+
+##############################################################
+# Need Help? Here's what to update in each file:
+##############################################################
+
+See the detailed instructions in the sections below...
