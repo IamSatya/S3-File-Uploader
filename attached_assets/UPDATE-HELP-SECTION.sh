@@ -1,3 +1,17 @@
+#!/bin/bash
+# Update Help Section to be Collapsible with Better Explanations
+# Run this on your VPS: bash UPDATE-HELP-SECTION.sh
+
+cd /var/www/hackfiles
+
+echo "📝 Updating Help Section..."
+
+# Backup files
+cp client/src/components/WelcomeInstructions.tsx client/src/components/WelcomeInstructions.tsx.backup-help
+cp client/src/pages/Dashboard.tsx client/src/pages/Dashboard.tsx.backup-help
+
+# Update WelcomeInstructions component
+cat > client/src/components/WelcomeInstructions.tsx << 'WELCOME_END'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { X, Upload, FolderPlus, Download, Trash2, Clock, Shield } from 'lucide-react';
@@ -103,3 +117,37 @@ export function WelcomeInstructions({ onClose }: WelcomeInstructionsProps) {
     </Card>
   );
 }
+WELCOME_END
+
+echo "✅ WelcomeInstructions.tsx updated!"
+
+# Update Dashboard.tsx - Add HelpCircle import
+sed -i "s/import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database } from 'lucide-react';/import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database, HelpCircle } from 'lucide-react';/" client/src/pages/Dashboard.tsx
+
+# Change showInstructions default to false
+sed -i "s/const \[showInstructions, setShowInstructions\] = useState(true);/const [showInstructions, setShowInstructions] = useState(false);/" client/src/pages/Dashboard.tsx
+
+echo "✅ Dashboard.tsx imports updated!"
+echo ""
+echo "⚠️  MANUAL STEP REQUIRED:"
+echo "You need to add the Help button in Dashboard.tsx manually"
+echo ""
+echo "In client/src/pages/Dashboard.tsx, find this section (around line 432):"
+echo '  <div className="flex items-center gap-4">'
+echo '    <DropdownMenu>'
+echo ""
+echo "Add this BEFORE the <DropdownMenu>:"
+echo '  <Button'
+echo '    variant="outline"'
+echo '    size="sm"'
+echo '    onClick={() => setShowInstructions(!showInstructions)}'
+echo '    data-testid="button-help"'
+echo '  >'
+echo '    <HelpCircle className="mr-2 h-4 w-4" />'
+echo '    Help'
+echo '  </Button>'
+echo ""
+echo "Then rebuild:"
+echo "  npm run build"
+echo "  pm2 restart index"
+echo ""

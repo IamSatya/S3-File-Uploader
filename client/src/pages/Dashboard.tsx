@@ -18,7 +18,7 @@ import { FileUploadZone } from '@/components/FileUploadZone';
 import { FileSearchBar } from '@/components/FileSearchBar';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { BulkActionBar } from '@/components/BulkActionBar';
-import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database } from 'lucide-react';
+import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database, HelpCircle } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
 import JSZip from 'jszip';
 
@@ -27,7 +27,7 @@ export default function Dashboard() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const [currentPath, setCurrentPath] = useState('/');
-  const [showInstructions, setShowInstructions] = useState(true);
+  const [showInstructions, setShowInstructions] = useState(false);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<FileMetadata | null>(null);
   const [search, setSearch] = useState('');
@@ -427,6 +427,15 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowInstructions(!showInstructions)}
+                data-testid="button-help"
+              >
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Help
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full" data-testid="button-user-menu">
