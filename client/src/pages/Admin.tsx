@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck } from "lucide-react";
+import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database } from "lucide-react";
 import { registerSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata } from "@shared/schema";
 
 interface UserStats {
@@ -219,9 +219,16 @@ export default function Admin() {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold" data-testid="text-admin-title">Admin Dashboard</h1>
-            <Button variant="outline" onClick={() => navigate('/')} data-testid="button-back-to-dashboard">
-              Back to Dashboard
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={() => navigate('/s3-browser')} data-testid="button-s3-browser">
+                <Database className="mr-2 h-4 w-4" />
+                S3 Browser
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/')} data-testid="button-back-to-dashboard">
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Dashboard
+              </Button>
+            </div>
           </div>
         </div>
       </header>

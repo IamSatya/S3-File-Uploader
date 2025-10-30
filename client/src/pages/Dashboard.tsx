@@ -18,7 +18,7 @@ import { FileUploadZone } from '@/components/FileUploadZone';
 import { FileSearchBar } from '@/components/FileSearchBar';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { BulkActionBar } from '@/components/BulkActionBar';
-import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings } from 'lucide-react';
+import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
 import JSZip from 'jszip';
 
@@ -443,10 +443,16 @@ export default function Dashboard() {
                   </div>
                   <DropdownMenuSeparator />
                   {user?.isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="link-admin">
-                      <Settings className="mr-2 h-4 w-4" />
-                      Admin Dashboard
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="link-admin">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/s3-browser')} data-testid="link-s3-browser">
+                        <Database className="mr-2 h-4 w-4" />
+                        S3 Browser
+                      </DropdownMenuItem>
+                    </>
                   )}
                   <DropdownMenuItem onClick={async () => {
                     await apiRequest('POST', '/api/auth/logout', {});

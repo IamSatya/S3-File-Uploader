@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
+import S3Browser from "@/pages/S3Browser";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
         <>
           <Route path="/" component={Dashboard} />
           <Route path="/admin" component={Admin} />
+          <Route path="/s3-browser" component={S3Browser} />
         </>
       )}
       <Route component={NotFound} />

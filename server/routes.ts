@@ -374,6 +374,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Browse S3 bucket structure (admin only)
+  app.get('/api/admin/s3-browse', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const path = (req.query.path as string) || '/';
+      
+      // Get all files from database
+      const allFiles = await storage.getAllFiles();
+      
+      // Get all users for ownership info
+      const allUsers = await storage.getAllUsers();
+      const userMap = new Map(allUsers.map(u => [u.id, u]));
+      
+      // Filter files at the current path level
+      const filesAtPath = allFiles.filter(file => file.path === path);
+      
+      // Enrich with user information
+      const enrichedFiles = filesAtPath.map(file => {
+        const owner = userMap.get(file.userId);
+        return {
+          ...file,
+          ownerEmail: owner?.email || 'Unknown',
+          ownerName: owner ? `${owner.firstName} ${owner.lastName}` : 'Unknown'
+        };
+      });
+      
+      res.json(enrichedFiles);
+    } catch (error) {
+      console.error("Error browsing S3:", error);
+      res.status(500).json({ message: "Failed to browse S3" });
+    }
+  });
+
   // Toggle user active status (admin only)
   app.patch('/api/admin/users/:userId/toggle-active', isAuthenticated, requireAdmin, async (req, res) => {
     try {
