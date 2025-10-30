@@ -311,6 +311,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all users (admin only)
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      // Don't send passwords back
+      const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+      res.json(usersWithoutPasswords);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Get all files (admin only)
+  app.get('/api/admin/files', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const files = await storage.getAllFiles();
+      res.json(files);
+    } catch (error) {
+      console.error("Error fetching all files:", error);
+      res.status(500).json({ message: "Failed to fetch files" });
+    }
+  });
+
+  // Toggle user active status (admin only)
+  app.patch('/api/admin/users/:userId/toggle-active', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { isActive } = req.body;
+
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ message: "isActive must be a boolean" });
+      }
+
+      const user = await storage.updateUserActiveStatus(userId, isActive);
+      const { password, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error updating user status:", error);
+      res.status(500).json({ message: "Failed to update user status" });
+    }
+  });
+
   // Check if uploads are allowed
   async function checkUploadAllowed() {
     const config = await storage.getTimerConfig();

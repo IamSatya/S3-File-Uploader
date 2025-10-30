@@ -49,6 +49,11 @@ export function setupAuth(app: Express) {
             return done(null, false, { message: "Invalid email or password" });
           }
 
+          // Check if user account is active
+          if (!user.isActive) {
+            return done(null, false, { message: "Account has been disabled. Please contact administrator." });
+          }
+
           const isValidPassword = await bcrypt.compare(password, user.password);
           
           if (!isValidPassword) {

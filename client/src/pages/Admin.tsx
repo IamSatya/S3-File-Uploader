@@ -9,10 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, HardDrive, Files, Clock, UserPlus } from "lucide-react";
-import { registerSchema, type RegisterInput, type TimerConfig } from "@shared/schema";
+import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck } from "lucide-react";
+import { registerSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata } from "@shared/schema";
 
 interface UserStats {
   userId: string;
@@ -83,6 +84,16 @@ export default function Admin() {
     enabled: !!user?.isAdmin,
   });
 
+  const { data: allUsers, isLoading: usersLoading } = useQuery<Omit<User, 'password'>[]>({
+    queryKey: ['/api/admin/users'],
+    enabled: !!user?.isAdmin,
+  });
+
+  const { data: allFiles, isLoading: filesLoading } = useQuery<FileMetadata[]>({
+    queryKey: ['/api/admin/files'],
+    enabled: !!user?.isAdmin,
+  });
+
   // Handle API errors (403, 401, etc.)
   useEffect(() => {
     if (statsError || timerError) {
@@ -130,6 +141,7 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       createUserForm.reset();
       setShowCreateUser(false);
       toast({
@@ -141,6 +153,27 @@ export default function Admin() {
       toast({
         title: "Error",
         description: error.message || "Failed to create user",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const toggleUserMutation = useMutation({
+    mutationFn: async ({ userId, isActive }: { userId: string; isActive: boolean }) => {
+      return await apiRequest('PATCH', `/api/admin/users/${userId}/toggle-active`, { isActive });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      toast({
+        title: "Success",
+        description: "User status updated successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
         variant: "destructive",
       });
     },
@@ -376,6 +409,158 @@ export default function Admin() {
                 </form>
               </CardContent>
             )}
+          </Card>
+
+          {/* User Management */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <ShieldCheck className="h-5 w-5" />
+                User Management
+              </CardTitle>
+              <CardDescription>
+                Manage user accounts and login access
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">Name</th>
+                      <th className="text-left p-2">Email</th>
+                      <th className="text-center p-2">Role</th>
+                      <th className="text-center p-2">Status</th>
+                      <th className="text-center p-2">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {usersLoading ? (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                          Loading users...
+                        </td>
+                      </tr>
+                    ) : allUsers && allUsers.length > 0 ? (
+                      allUsers.map((usr) => (
+                        <tr
+                          key={usr.id}
+                          className="border-b hover-elevate"
+                          data-testid={`row-user-${usr.id}`}
+                        >
+                          <td className="p-2">
+                            {usr.firstName && usr.lastName
+                              ? `${usr.firstName} ${usr.lastName}`
+                              : 'Unknown'}
+                          </td>
+                          <td className="p-2 text-muted-foreground">{usr.email}</td>
+                          <td className="p-2 text-center">
+                            {usr.isAdmin ? (
+                              <Badge variant="default" data-testid={`badge-admin-${usr.id}`}>Admin</Badge>
+                            ) : (
+                              <Badge variant="secondary" data-testid={`badge-user-${usr.id}`}>User</Badge>
+                            )}
+                          </td>
+                          <td className="p-2 text-center">
+                            {usr.isActive ? (
+                              <Badge variant="default" className="bg-green-600 hover:bg-green-700" data-testid={`badge-active-${usr.id}`}>
+                                Active
+                              </Badge>
+                            ) : (
+                              <Badge variant="destructive" data-testid={`badge-inactive-${usr.id}`}>
+                                Disabled
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="p-2 text-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleUserMutation.mutate({ userId: usr.id, isActive: !usr.isActive })}
+                              disabled={toggleUserMutation.isPending || usr.id === user?.id}
+                              data-testid={`button-toggle-${usr.id}`}
+                            >
+                              {usr.isActive ? 'Disable' : 'Enable'}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                          No users found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* All Files View */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FolderOpen className="h-5 w-5" />
+                All Files (S3 Content)
+              </CardTitle>
+              <CardDescription>
+                View all files uploaded by all users
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="text-left p-2">File Name</th>
+                      <th className="text-left p-2">S3 Path</th>
+                      <th className="text-left p-2">Type</th>
+                      <th className="text-right p-2">Size</th>
+                      <th className="text-left p-2">Uploaded</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filesLoading ? (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                          Loading files...
+                        </td>
+                      </tr>
+                    ) : allFiles && allFiles.length > 0 ? (
+                      allFiles
+                        .filter(file => !file.isFolder)
+                        .map((file) => (
+                          <tr
+                            key={file.id}
+                            className="border-b hover-elevate"
+                            data-testid={`row-file-${file.id}`}
+                          >
+                            <td className="p-2 font-medium">{file.name}</td>
+                            <td className="p-2 text-muted-foreground font-mono text-sm">
+                              {file.s3Key}
+                            </td>
+                            <td className="p-2 text-muted-foreground text-sm">
+                              {file.isFolder ? 'Folder' : (file.mimeType || 'Unknown')}
+                            </td>
+                            <td className="p-2 text-right">{formatBytes(file.size)}</td>
+                            <td className="p-2 text-muted-foreground text-sm">
+                              {file.createdAt ? new Date(file.createdAt).toLocaleString() : 'N/A'}
+                            </td>
+                          </tr>
+                        ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
+                          No files found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
           </Card>
 
           {/* User Storage Stats */}

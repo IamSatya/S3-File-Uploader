@@ -33,6 +33,8 @@ export interface IStorage {
   
   // Admin operations
   getAllUsers(): Promise<User[]>;
+  getAllFiles(): Promise<FileMetadata[]>;
+  updateUserActiveStatus(userId: string, isActive: boolean): Promise<User>;
   getUserStorageStats(): Promise<{ userId: string; email: string | null; firstName: string | null; lastName: string | null; totalFiles: number; totalSize: number }[]>;
   getTotalStats(): Promise<{ totalUsers: number; totalFiles: number; totalSize: number }>;
 }
@@ -146,6 +148,19 @@ export class DatabaseStorage implements IStorage {
   // Admin operations
   async getAllUsers(): Promise<User[]> {
     return await db.select().from(users);
+  }
+
+  async getAllFiles(): Promise<FileMetadata[]> {
+    return await db.select().from(fileMetadata).orderBy(fileMetadata.createdAt);
+  }
+
+  async updateUserActiveStatus(userId: string, isActive: boolean): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ isActive, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 
   async getUserStorageStats() {
