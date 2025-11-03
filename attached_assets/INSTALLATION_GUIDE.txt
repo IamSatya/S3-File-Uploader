@@ -1,0 +1,66 @@
+ADMIN FEATURES - INSTALLATION GUIDE
+====================================
+
+Files to Replace:
+-----------------
+1. storage.ts  → server/storage.ts
+2. routes.ts   → server/routes.ts
+3. Admin.tsx   → client/src/pages/Admin.tsx
+
+Installation Steps:
+-------------------
+1. Download these 3 files from attached_assets folder
+2. Replace the files in your local project:
+   - Copy storage.ts to your-project/server/storage.ts
+   - Copy routes.ts to your-project/server/routes.ts
+   - Copy Admin.tsx to your-project/client/src/pages/Admin.tsx
+
+3. No additional packages needed (bcrypt already installed)
+
+4. Restart your server
+
+Features Added:
+---------------
+✅ Reset Password (Admin only)
+   - Button in User Management table
+   - Minimum 8 characters validation
+   - Secure bcrypt hashing
+
+✅ Delete User (Admin only)
+   - Red delete button in User Management table
+   - Confirmation dialog
+   - Cannot delete own account
+   - Cascade deletes user files
+
+API Endpoints Added:
+--------------------
+POST   /api/admin/users/:userId/reset-password
+DELETE /api/admin/users/:userId
+
+Usage:
+------
+1. Login as admin
+2. Navigate to Admin panel
+3. In User Management table:
+   - Click "Reset Password" to reset user password
+   - Click red "Delete" button to delete user
+
+PostgreSQL Setup (Local):
+-------------------------
+If using local PostgreSQL instead of Neon, update server/db.ts:
+
+```typescript
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from "@shared/schema";
+
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL must be set.");
+}
+
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const db = drizzle(pool, { schema });
+```
+
+Install pg: npm install pg @types/pg
+Set DATABASE_URL: postgresql://user:pass@localhost:5432/dbname
