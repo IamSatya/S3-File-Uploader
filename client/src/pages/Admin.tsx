@@ -12,8 +12,24 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database } from "lucide-react";
-import { registerSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata } from "@shared/schema";
+import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database, Key } from "lucide-react";
+import { registerSchema, resetPasswordSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata, type ResetPasswordInput } from "@shared/schema";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 
 interface UserStats {
   userId: string;
@@ -50,6 +66,7 @@ export default function Admin() {
   const [deadline, setDeadline] = useState<string>('');
   const [isActive, setIsActive] = useState(true);
   const [showCreateUser, setShowCreateUser] = useState(false);
+  const [userToResetPassword, setUserToResetPassword] = useState<Omit<User, 'password'> | null>(null);
 
   const createUserForm = useForm<RegisterInput & { isAdmin: boolean }>({
     resolver: zodResolver(registerSchema),
@@ -59,6 +76,13 @@ export default function Admin() {
       firstName: '',
       lastName: '',
       isAdmin: false,
+    },
+  });
+
+  const resetPasswordForm = useForm<ResetPasswordInput>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: '',
     },
   });
 
@@ -179,6 +203,27 @@ export default function Admin() {
     },
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: async ({ userId, password }: { userId: string; password: string }) => {
+      return await apiRequest('POST', `/api/admin/users/${userId}/reset-password`, { password });
+    },
+    onSuccess: () => {
+      setUserToResetPassword(null);
+      resetPasswordForm.reset();
+      toast({
+        title: "Success",
+        description: "Password reset successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset password",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpdateTimer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!deadline) {
@@ -195,6 +240,14 @@ export default function Admin() {
   const handleCreateUser = (data: RegisterInput) => {
     const isAdmin = (createUserForm.getValues() as any).isAdmin === true;
     createUserMutation.mutate({ ...data, isAdmin });
+  };
+
+  const handleResetPassword = (data: ResetPasswordInput) => {
+    if (!userToResetPassword) return;
+    resetPasswordMutation.mutate({
+      userId: userToResetPassword.id,
+      password: data.password,
+    });
   };
 
   // Show loading while checking auth or fetching data
@@ -438,7 +491,7 @@ export default function Admin() {
                       <th className="text-left p-2">Email</th>
                       <th className="text-center p-2">Role</th>
                       <th className="text-center p-2">Status</th>
-                      <th className="text-center p-2">Action</th>
+                      <th className="text-center p-2">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -480,15 +533,30 @@ export default function Admin() {
                             )}
                           </td>
                           <td className="p-2 text-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => toggleUserMutation.mutate({ userId: usr.id, isActive: !usr.isActive })}
-                              disabled={toggleUserMutation.isPending || usr.id === user?.id}
-                              data-testid={`button-toggle-${usr.id}`}
-                            >
-                              {usr.isActive ? 'Disable' : 'Enable'}
-                            </Button>
+                            <div className="flex items-center justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => toggleUserMutation.mutate({ userId: usr.id, isActive: !usr.isActive })}
+                                disabled={toggleUserMutation.isPending || usr.id === user?.id}
+                                data-testid={`button-toggle-${usr.id}`}
+                              >
+                                {usr.isActive ? 'Disable' : 'Enable'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setUserToResetPassword(usr);
+                                  resetPasswordForm.reset();
+                                }}
+                                disabled={resetPasswordMutation.isPending}
+                                data-testid={`button-reset-password-${usr.id}`}
+                              >
+                                <Key className="mr-2 h-4 w-4" />
+                                Reset Password
+                              </Button>
+                            </div>
                           </td>
                         </tr>
                       ))
@@ -624,6 +692,57 @@ export default function Admin() {
           </Card>
         </div>
       </main>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={!!userToResetPassword} onOpenChange={(open) => !open && setUserToResetPassword(null)}>
+        <DialogContent data-testid="dialog-reset-password">
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+            <DialogDescription>
+              Set a new password for {userToResetPassword?.firstName} {userToResetPassword?.lastName} ({userToResetPassword?.email})
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...resetPasswordForm}>
+            <form onSubmit={resetPasswordForm.handleSubmit(handleResetPassword)} className="space-y-4">
+              <FormField
+                control={resetPasswordForm.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>New Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Enter new password (min 8 characters)"
+                        {...field}
+                        data-testid="input-new-password"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setUserToResetPassword(null)}
+                  data-testid="button-cancel-reset"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={resetPasswordMutation.isPending}
+                  data-testid="button-submit-reset"
+                >
+                  {resetPasswordMutation.isPending ? 'Resetting...' : 'Reset Password'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
