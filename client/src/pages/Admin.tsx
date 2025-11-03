@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database, Key } from "lucide-react";
+import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database, Key, Trash2 } from "lucide-react";
 import { registerSchema, resetPasswordSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata, type ResetPasswordInput } from "@shared/schema";
 import {
   Dialog,
@@ -67,6 +67,7 @@ export default function Admin() {
   const [isActive, setIsActive] = useState(true);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [userToResetPassword, setUserToResetPassword] = useState<Omit<User, 'password'> | null>(null);
+  const [userToDelete, setUserToDelete] = useState<Omit<User, 'password'> | null>(null);
 
   const createUserForm = useForm<RegisterInput & { isAdmin: boolean }>({
     resolver: zodResolver(registerSchema),
@@ -225,6 +226,28 @@ export default function Admin() {
     },
   });
 
+  const deleteUserMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      return await apiRequest('DELETE', `/api/admin/users/${userId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setUserToDelete(null);
+      toast({
+        title: "Success",
+        description: "User deleted successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete user",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleUpdateTimer = (e: React.FormEvent) => {
     e.preventDefault();
     if (!deadline) {
@@ -249,6 +272,11 @@ export default function Admin() {
       userId: userToResetPassword.id,
       password: data.password,
     });
+  };
+
+  const handleDeleteUser = () => {
+    if (!userToDelete) return;
+    deleteUserMutation.mutate(userToDelete.id);
   };
 
   // Show loading while checking auth or fetching data
@@ -557,6 +585,16 @@ export default function Admin() {
                                 <Key className="mr-2 h-4 w-4" />
                                 Reset Password
                               </Button>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => setUserToDelete(usr)}
+                                disabled={deleteUserMutation.isPending || usr.id === user?.id}
+                                data-testid={`button-delete-${usr.id}`}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </Button>
                             </div>
                           </td>
                         </tr>
@@ -742,6 +780,36 @@ export default function Admin() {
               </DialogFooter>
             </form>
           </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation Dialog */}
+      <Dialog open={!!userToDelete} onOpenChange={(open) => !open && setUserToDelete(null)}>
+        <DialogContent data-testid="dialog-delete-user">
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete {userToDelete?.firstName} {userToDelete?.lastName} ({userToDelete?.email})? This action cannot be undone and will delete all user files.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setUserToDelete(null)}
+              data-testid="button-cancel-delete"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteUser}
+              disabled={deleteUserMutation.isPending}
+              data-testid="button-confirm-delete"
+            >
+              {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

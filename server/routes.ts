@@ -448,6 +448,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete user (admin only)
+  app.delete('/api/admin/users/:userId', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { userId } = req.params;
+
+      // Prevent admin from deleting themselves
+      if (userId === req.user.id) {
+        return res.status(400).json({ message: "Cannot delete your own account" });
+      }
+
+      await storage.deleteUser(userId);
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Check if uploads are allowed
   async function checkUploadAllowed() {
     const config = await storage.getTimerConfig();

@@ -36,6 +36,7 @@ export interface IStorage {
   getAllFiles(): Promise<FileMetadata[]>;
   updateUserActiveStatus(userId: string, isActive: boolean): Promise<User>;
   updateUserPassword(userId: string, hashedPassword: string): Promise<User>;
+  deleteUser(userId: string): Promise<void>;
   getUserStorageStats(): Promise<{ userId: string; email: string | null; firstName: string | null; lastName: string | null; totalFiles: number; totalSize: number }[]>;
   getTotalStats(): Promise<{ totalUsers: number; totalFiles: number; totalSize: number }>;
 }
@@ -171,6 +172,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async deleteUser(userId: string): Promise<void> {
+    // Note: Files are cascade deleted via database constraint
+    await db
+      .delete(users)
+      .where(eq(users.id, userId));
   }
 
   async getUserStorageStats() {
