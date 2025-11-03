@@ -208,6 +208,7 @@ export default function Admin() {
       return await apiRequest('POST', `/api/admin/users/${userId}/reset-password`, { password });
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setUserToResetPassword(null);
       resetPasswordForm.reset();
       toast({
