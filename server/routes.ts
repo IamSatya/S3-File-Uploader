@@ -425,6 +425,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reset user password (admin only)
+  app.post('/api/admin/users/:userId/reset-password', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { password } = req.body;
+
+      if (!password || password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
+      // Hash the new password
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      // Update user's password
+      const user = await storage.updateUserPassword(userId, hashedPassword);
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      console.error("Error resetting user password:", error);
+      res.status(500).json({ message: "Failed to reset user password" });
+    }
+  });
+
   // Check if uploads are allowed
   async function checkUploadAllowed() {
     const config = await storage.getTimerConfig();
