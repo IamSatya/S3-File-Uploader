@@ -1,0 +1,41 @@
+vite v5.4.20 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+transforming (4) src/App.tsx
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 1854 modules transformed.
+x Build failed in 3.59s
+error during build:
+client/src/pages/Admin.tsx (16:25): "resetPasswordSchema" is not exported by "shared/schema.ts", imported by "client/src/pages/Admin.tsx".
+file: /var/www/hackfiles/client/src/pages/Admin.tsx:16:25
+
+14: import { apiRequest, queryClient } from "@/lib/queryClient";
+15: import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database, Key, Trash2 } from "lucide-react";
+16: import { registerSchema, resetPasswordSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata, typ...
+                             ^
+17: import {
+18:   Dialog,
+
+    at getRollupError (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/parseAst.js:396:41)
+    at error (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/parseAst.js:392:42)
+    at Module.error (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:15588:16)
+    at Module.traceVariable (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:16037:29)
+    at ModuleScope.findVariable (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:13820:39)
+    at FunctionScope.findVariable (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:5283:38)
+    at FunctionBodyScope.findVariable (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:5283:38)
+    at Identifier.bind (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:5066:40)
+    at CallExpression.bind (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:2649:28)
+    at CallExpression.bind (file:///var/www/hackfiles/node_modules/rollup/dist/es/shared/node-entry.js:11284:15)
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [all](ids: [ 0 ])
+[PM2] [index](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ index              │ fork     │ 38   │ online    │ 0%       │ 19.1mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ index              │ fork     │ 38   │ online    │ 0%       │ 53.5mb   │
