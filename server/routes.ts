@@ -637,8 +637,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const basePath = req.body.path || '/';
       const files = req.files as Express.Multer.File[];
+      
+      // DEBUG: Log what we received
+      console.log('[FOLDER-UPLOAD] req.body keys:', Object.keys(req.body));
+      console.log('[FOLDER-UPLOAD] req.files length:', files?.length || 0);
+      console.log('[FOLDER-UPLOAD] req.body:', JSON.stringify(req.body, null, 2));
+      
       // Fix: FormData sends 'relativePaths[]' not 'relativePaths'
       const relativePaths = req.body['relativePaths[]'] || req.body.relativePaths;
+      console.log('[FOLDER-UPLOAD] relativePaths:', relativePaths);
 
       // Check if uploads are allowed
       const uploadAllowed = await checkUploadAllowed();
@@ -647,6 +654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       if (!files || files.length === 0) {
+        console.error('[FOLDER-UPLOAD] ERROR: No files received!');
         return res.status(400).json({ message: "No files provided" });
       }
 
