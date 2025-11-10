@@ -21,6 +21,7 @@ import { BulkActionBar } from '@/components/BulkActionBar';
 import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database, HelpCircle } from 'lucide-react';
 import type { FileMetadata, TimerConfig } from '@shared/schema';
 import JSZip from 'jszip';
+import { HacktivateBackgroundLayout } from '@/components/HacktivateBackgroundLayout';
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -415,8 +416,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b bg-background sticky top-0 z-50">
+    <HacktivateBackgroundLayout>
+      <header className="border-b backdrop-blur-sm bg-background/80 sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
@@ -635,6 +636,6 @@ export default function Dashboard() {
         file={fileToDelete}
         isDeleting={deleteMutation.isPending}
       />
-    </div>
+    </HacktivateBackgroundLayout>
   );
 }

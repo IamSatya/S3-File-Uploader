@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Folder, File, ChevronRight, Home, FolderOpen, Settings, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { HacktivateBackgroundLayout } from "@/components/HacktivateBackgroundLayout";
 
 interface FileWithOwner {
   id: string;
@@ -110,8 +111,8 @@ export default function S3Browser() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
+    <HacktivateBackgroundLayout>
+      <header className="border-b backdrop-blur-sm bg-background/80">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -134,114 +135,103 @@ export default function S3Browser() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
+      <main className="container mx-auto p-6 space-y-6">
+        {/* Breadcrumb Navigation */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleBreadcrumbClick("", -1)}
+                data-testid="breadcrumb-home"
+              >
+                <Home className="h-4 w-4" />
+              </Button>
+              {pathSegments.map((segment, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleBreadcrumbClick(segment, index)}
+                    data-testid={`breadcrumb-${segment}`}
+                  >
+                    {segment}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* File/Folder List */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Folder className="h-5 w-5" />
-              Current Path
-            </CardTitle>
+            <CardTitle>Contents</CardTitle>
             <CardDescription>
-              <div className="flex items-center gap-1 flex-wrap mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleBreadcrumbClick("", -1)}
-                  className="h-7 px-2"
-                  data-testid="breadcrumb-root"
-                >
-                  <Home className="h-4 w-4" />
-                </Button>
-                {pathSegments.map((segment, index) => (
-                  <div key={index} className="flex items-center gap-1">
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleBreadcrumbClick(segment, index)}
-                      className="h-7 px-2"
-                      data-testid={`breadcrumb-${segment}`}
-                    >
-                      {segment}
-                    </Button>
-                  </div>
-                ))}
-              </div>
+              {files.length === 0
+                ? "No files or folders in this location"
+                : `${folders.length} folder${folders.length !== 1 ? "s" : ""}, ${regularFiles.length} file${regularFiles.length !== 1 ? "s" : ""}`}
             </CardDescription>
           </CardHeader>
-
           <CardContent>
-            {files.length === 0 && !isLoading ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <FolderOpen className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>No files or folders in this location</p>
+            {error ? (
+              <div className="text-center py-8">
+                <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+                <p className="text-destructive font-medium">Failed to load S3 content</p>
+                <p className="text-sm text-muted-foreground mt-2">Please try again or contact support</p>
+              </div>
+            ) : files.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                This folder is empty
               </div>
             ) : (
-              <div className="space-y-6">
-                {folders.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Folders</h3>
-                    <div className="grid gap-2">
-                      {folders.map((folder) => (
-                        <button
-                          key={folder.id}
-                          onClick={() => handleFolderClick(folder)}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent transition-colors text-left"
-                          data-testid={`folder-${folder.name}`}
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <Folder className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{folder.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                Owner: {folder.ownerName} ({folder.ownerEmail})
-                              </p>
-                            </div>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
-                        </button>
-                      ))}
+              <div className="space-y-1">
+                {/* Folders First */}
+                {folders.map((folder) => (
+                  <button
+                    key={folder.id}
+                    onClick={() => handleFolderClick(folder)}
+                    className="w-full flex items-center gap-4 p-3 rounded-md hover-elevate active-elevate-2 text-left"
+                    data-testid={`folder-${folder.name}`}
+                  >
+                    <Folder className="h-5 w-5 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{folder.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Folder • Owner: {folder.ownerName} ({folder.ownerEmail})
+                      </div>
                     </div>
-                  </div>
-                )}
+                  </button>
+                ))}
 
-                {regularFiles.length > 0 && (
-                  <div>
-                    <h3 className="text-sm font-semibold mb-3 text-muted-foreground">Files</h3>
-                    <div className="grid gap-2">
-                      {regularFiles.map((file) => (
-                        <div
-                          key={file.id}
-                          className="flex items-center justify-between p-3 rounded-lg border bg-card"
-                          data-testid={`file-${file.name}`}
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <File className="h-5 w-5 text-gray-500 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium truncate">{file.name}</p>
-                              <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                <span>Owner: {file.ownerName} ({file.ownerEmail})</span>
-                                <span>•</span>
-                                <span>{formatFileSize(file.size)}</span>
-                                {file.mimeType && (
-                                  <>
-                                    <span>•</span>
-                                    <span>{file.mimeType}</span>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                {/* Files */}
+                {regularFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="flex items-center gap-4 p-3 rounded-md border"
+                    data-testid={`file-${file.name}`}
+                  >
+                    <File className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium truncate">{file.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatFileSize(file.size)} •{" "}
+                        {file.mimeType || "Unknown type"} •{" "}
+                        Uploaded {formatDistanceToNow(new Date(file.createdAt), { addSuffix: true })}
+                      </div>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        <span className="font-medium">Owner:</span> {file.ownerName} ({file.ownerEmail})
+                      </div>
                     </div>
                   </div>
-                )}
+                ))}
               </div>
             )}
           </CardContent>
         </Card>
       </main>
-    </div>
+    </HacktivateBackgroundLayout>
   );
 }

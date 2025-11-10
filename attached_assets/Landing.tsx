@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Upload, FolderOpen, Clock, Shield, Download, Trash2 } from 'lucide-react';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@shared/schema';
-import hacktivateBackground from '@assets/hacktivate-bg.jpg';
+import { HacktivateBackgroundLayout } from '@/components/HacktivateBackgroundLayout';
 
 export default function Landing() {
   const [, navigate] = useLocation();
@@ -84,20 +84,8 @@ export default function Landing() {
   };
 
   return (
-    <div 
-      className="min-h-screen flex flex-col relative"
-      style={{
-        backgroundImage: `url(${hacktivateBackground})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      {/* Dark overlay for better readability */}
-      <div className="absolute inset-0 bg-black/40 z-0" />
-      
-      <header className="border-b backdrop-blur-sm bg-background/80 relative z-10">
+    <HacktivateBackgroundLayout>
+      <header className="border-b backdrop-blur-sm bg-background/80">
         <div className="container mx-auto px-4 py-4 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
@@ -108,7 +96,7 @@ export default function Landing() {
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center py-12 px-4 relative z-10">
+      <main className="flex-1 flex items-center justify-center py-12 px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold tracking-tight mb-2 text-white drop-shadow-lg">
@@ -247,11 +235,11 @@ export default function Landing() {
         </div>
       </main>
 
-      <footer className="border-t backdrop-blur-sm bg-background/80 py-6 relative z-10">
+      <footer className="border-t backdrop-blur-sm bg-background/80 py-6">
         <div className="container mx-auto px-4 text-center text-sm">
           <p className="text-white/80 drop-shadow-md">HackTIvate 2025 - Secure file management for hackathon participants</p>
         </div>
       </footer>
-    </div>
+    </HacktivateBackgroundLayout>
   );
 }
