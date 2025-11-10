@@ -8,12 +8,13 @@ The platform allows users to authenticate via Replit Auth, upload files and fold
 
 ## Recent Changes
 
-**November 10, 2025**: Complete background image implementation across all pages
-- Created `HacktivateBackgroundLayout` component for consistent background treatment
-- Applied HackTIvate 2025 background image to all pages (Landing, Dashboard, Admin, S3Browser)
-- Added dark overlay (40% opacity) for optimal text readability
-- Implemented frosted glass effect (backdrop-blur) on all page headers
-- Eliminated code duplication by centralizing background logic in shared component
+**November 10, 2025**: Fixed folder upload functionality
+- **Critical Fix**: Folder upload now preserves FileList when input is cleared using DataTransfer API
+- Root cause: `e.target.value = ''` was clearing the FileList before mutation could access files
+- Solution: Convert FileList to Array, create new DataTransfer object to preserve files
+- Backend uses `relativePaths[]` array syntax for FormData (required by multer)
+- Build process requires `--tree-shaking=false` to prevent esbuild from stripping registerRoutes
+- Complete background image implementation across all pages via `HacktivateBackgroundLayout` component
 
 ## User Preferences
 
