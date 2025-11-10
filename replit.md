@@ -1,8 +1,8 @@
-# HackFiles - Hackathon File Manager
+# HackTIvate - Hackathon File Manager
 
 ## Overview
 
-HackFiles is a secure, time-limited file management platform designed specifically for hackathon participants. It provides file upload, organization, and sharing capabilities with a countdown timer that enforces access deadlines. The application features a modern, clean interface inspired by Linear and Notion, built with a focus on productivity and clarity.
+HackTIvate is a secure, time-limited file management platform designed specifically for HackTIvate 2025 participants. It provides file upload, organization, and sharing capabilities with a countdown timer that enforces access deadlines. The application features a modern, clean interface inspired by Linear and Notion, built with a focus on productivity and clarity.
 
 The platform allows users to authenticate via Replit Auth, upload files and folders to AWS S3, organize content in a nested folder structure, and manage files with a deadline-based access control system.
 

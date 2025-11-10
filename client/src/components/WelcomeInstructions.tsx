@@ -11,7 +11,7 @@ export function WelcomeInstructions({ onClose }: WelcomeInstructionsProps) {
     <Card className="border-primary/20" data-testid="welcome-instructions">
       <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0 pb-4">
         <div>
-          <CardTitle className="text-xl">How to Use HackFiles</CardTitle>
+          <CardTitle className="text-xl">How to Use HackTIvate</CardTitle>
           <CardDescription className="mt-1">
             Everything you need to know about managing your files
           </CardDescription>

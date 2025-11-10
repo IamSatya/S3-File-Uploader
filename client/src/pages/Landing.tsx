@@ -240,16 +240,16 @@ export default function Landing() {
             </CardContent>
           </Card>
 
-          <div className="mt-8 text-center text-sm text-muted-foreground">
-            <p>Secure file management for hackathons</p>
-            <p className="mt-2">Time-limited uploads • Private storage • Full control</p>
+          <div className="mt-8 text-center text-sm">
+            <p className="text-white/80 drop-shadow-md">Secure file management for HackTIvate 2025</p>
+            <p className="mt-2 text-white/70 drop-shadow-md">Time-limited uploads • Private storage • Full control</p>
           </div>
         </div>
       </main>
 
-      <footer className="border-t py-6">
-        <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-          <p>HackFiles - Secure file management for hackathons</p>
+      <footer className="border-t backdrop-blur-sm bg-background/80 py-6 relative z-10">
+        <div className="container mx-auto px-4 text-center text-sm">
+          <p className="text-white/80 drop-shadow-md">HackTIvate 2025 - Secure file management for hackathon participants</p>
         </div>
       </footer>
     </div>
