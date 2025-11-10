@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Upload, FolderOpen, Clock, Shield, Download, Trash2 } from 'lucide-react';
 import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@shared/schema';
+import hacktivateBackground from '@assets/hacktivate-bg.jpg';
 
 export default function Landing() {
   const [, navigate] = useLocation();
@@ -83,30 +84,42 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b">
+    <div 
+      className="min-h-screen flex flex-col relative"
+      style={{
+        backgroundImage: `url(${hacktivateBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      {/* Dark overlay for better readability */}
+      <div className="absolute inset-0 bg-black/40 z-0" />
+      
+      <header className="border-b backdrop-blur-sm bg-background/80 relative z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-center">
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
               <FolderOpen className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold">HackFiles</h1>
+            <h1 className="text-2xl font-bold text-white drop-shadow-lg">HackTIvate</h1>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 flex items-center justify-center py-12 px-4">
+      <main className="flex-1 flex items-center justify-center py-12 px-4 relative z-10">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold tracking-tight mb-2">
-              Welcome to HackFiles
+            <h2 className="text-3xl font-bold tracking-tight mb-2 text-white drop-shadow-lg">
+              Welcome to HackTIvate 2025
             </h2>
-            <p className="text-muted-foreground">
-              Secure file management for hackathons
+            <p className="text-white/90 drop-shadow-md text-lg">
+              Secure file management for hackathon participants
             </p>
           </div>
 
-          <Card>
+          <Card className="backdrop-blur-md bg-background/95">
             <CardContent className="pt-6">
               <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'register')}>
                 <TabsList className="grid w-full grid-cols-2">
