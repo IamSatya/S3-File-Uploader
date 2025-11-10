@@ -1,0 +1,50 @@
+FOLDER UPLOAD FIX - "No files provided" Error
+===============================================
+
+PROBLEM: Folder upload fails with "No files provided" error
+CAUSE: Frontend was sending relativePaths incorrectly - needed to be an array
+
+SOLUTION: One-line fix in Dashboard.tsx
+-----------------------------------------
+
+FILE TO UPDATE: client/src/pages/Dashboard.tsx
+LINE: 175 (inside uploadFolderMutation)
+
+CHANGE FROM:
+  formData.append('relativePaths', (file as any).webkitRelativePath || file.name);
+
+CHANGE TO:
+  formData.append('relativePaths[]', (file as any).webkitRelativePath || file.name);
+
+DEPLOYMENT COMMANDS (on VPS):
+------------------------------
+
+# 1. Navigate to your app
+cd /var/www/hackfiles
+
+# 2. Download Dashboard-FIXED.tsx from Replit attached_assets folder
+
+# 3. Replace the file
+cp Dashboard-FIXED.tsx client/src/pages/Dashboard.tsx
+
+# 4. Rebuild
+npm run build
+
+# 5. Restart PM2
+pm2 restart hackfiles
+
+# 6. Test folder upload
+# - Select a folder with files
+# - Should now upload successfully!
+
+VERIFICATION:
+-------------
+✅ Select a folder with multiple files
+✅ Upload button processes the folder
+✅ All files appear in dashboard with correct folder structure
+✅ No "No files provided" error
+
+PM2 LOGS SHOULD SHOW:
+---------------------
+✅ POST /api/files/upload-folder 200 (success!)
+❌ NOT: POST /api/files/upload-folder 400 "No files provided"
