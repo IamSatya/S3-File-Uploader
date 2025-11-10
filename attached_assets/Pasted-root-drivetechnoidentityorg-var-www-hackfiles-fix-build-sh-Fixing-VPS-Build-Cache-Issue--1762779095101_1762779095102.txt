@@ -1,0 +1,56 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# ./fix-build.sh
+=== Fixing VPS Build Cache Issue ===
+1. Stopping PM2...
+[PM2] Applying action stopProcessId on app [hackfiles](ids: [ 0 ])
+[PM2] [hackfiles](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ hackfiles          │ cluster  │ 13   │ stopped   │ 0%       │ 0b       │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+2. Deleting all caches and build artifacts...
+3. Verifying source file has the fix...
+   ✓ Source file has FOLDER-SELECT debug logs
+   ✓ Source file has relativePaths[] fix
+4. Building fresh (no cache)...
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --tree-shaking=false --target=node18 --outdir=dist
+
+vite v5.4.20 building for production...
+transforming (3) src/main.tsxBrowserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+transforming (5) ../node_modules/@tanstack/react-query/build/modern/index.js
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 2158 modules transformed.
+../dist/public/index.html                             0.96 kB │ gzip:   0.52 kB
+../dist/public/assets/hacktivate-bg-CEwaBy6a.jpg  1,451.22 kB
+../dist/public/assets/index-q7OqLhZy.css             74.19 kB │ gzip:  12.03 kB
+../dist/public/assets/index-Jv18zq-i.js             669.96 kB │ gzip: 201.64 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.29s
+
+  dist/index.js  43.7kb
+
+⚡ Done in 16ms
+5. Verifying built bundle contains the fix...
+   ✓ Built bundle has FOLDER-SELECT debug logs
+grep: Invalid regular expression
+   ✗ WARNING: Built bundle missing relativePaths[]!
+6. Restarting PM2...
+Use --update-env to update environment variables
+[PM2] Applying action restartProcessId on app [hackfiles](ids: [ 0 ])
+[PM2] [hackfiles](0) ✓
+┌────┬────────────────────┬──────────┬──────┬───────────┬──────────┬──────────┐
+│ id │ name               │ mode     │ ↺    │ status    │ cpu      │ memory   │
+├────┼────────────────────┼──────────┼──────┼───────────┼──────────┼──────────┤
+│ 0  │ hackfiles          │ cluster  │ 13   │ online    │ 0%       │ 41.5mb   │
+└────┴────────────────────┴──────────┴──────┴───────────┴──────────┴──────────┘
+
+=== Build Complete ===
+Now test folder upload with HARD REFRESH (Ctrl+Shift+R)
