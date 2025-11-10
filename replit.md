@@ -8,10 +8,14 @@ The platform allows users to authenticate via Replit Auth, upload files and fold
 
 ## Recent Changes
 
-**November 10, 2025**: Security improvements and folder upload fix
+**November 10, 2025**: Security improvements, S3 naming, and folder upload fix
 - **Security**: Removed public self-registration - all users must be created by administrators
 - Landing page now shows login-only form with message to contact admin for account creation
 - Admin dashboard retains full user creation functionality (`/api/admin/create-user`)
+- **S3 Naming**: New uploads now use email-based folder names for better human readability
+  - Pattern: `email@domain.com` → `email_domain_com/`
+  - Example: `himakar@technoidentity.com` → `himakar_technoidentity_com/`
+  - Old UUID-based folders remain functional (backwards compatible)
 - **Folder Upload Fix**: Preserves FileList when input is cleared using DataTransfer API
   - Root cause: `e.target.value = ''` was clearing the FileList before mutation could access files
   - Solution: Convert FileList to Array, create new DataTransfer object to preserve files
@@ -65,7 +69,9 @@ Preferred communication style: Simple, everyday language.
 **File Storage Strategy**
 - AWS S3 for object storage with presigned URLs for secure file downloads
 - File metadata stored in PostgreSQL, actual file content in S3
-- S3 key structure: `{userId}/{path}/{filename}` for logical organization
+- S3 key structure: `{sanitized_email}/{path}/{filename}` for human-readable organization
+  - New uploads: email-based folders (e.g., `user_domain_com/file.pdf`)
+  - Legacy files: UUID-based folders still supported for backwards compatibility
 - Folder representation: metadata entries with `isFolder: true` flag
 
 ### Database Architecture

@@ -18,6 +18,11 @@ function sanitizeEmail(email: string): string {
   return email.replace(/[@.]/g, '_');
 }
 
+// Helper function to get user S3 prefix (email-based for new uploads)
+function getUserS3Prefix(user: any): string {
+  return sanitizeEmail(user.email);
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   setupAuth(app);
@@ -542,6 +547,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/files/upload', isAuthenticated, upload.array('files'), async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const userPrefix = getUserS3Prefix(req.user);
       const path = req.body.path || '/';
       const files = req.files as Express.Multer.File[];
 
@@ -558,8 +564,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const uploadedFiles = [];
 
       for (const file of files) {
-        // Create S3 key: userId/path/filename
-        const s3Key = `${userId}${path}${file.originalname}`;
+        // Create S3 key: email-based-prefix/path/filename
+        const s3Key = `${userPrefix}${path}${file.originalname}`;
         
         // Upload to S3
         await uploadToS3(s3Key, file.buffer, file.mimetype);
@@ -589,6 +595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/files/upload-folder', isAuthenticated, upload.array('files'), async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const userPrefix = getUserS3Prefix(req.user);
       const basePath = req.body.path || '/';
       const files = req.files as Express.Multer.File[];
       
@@ -634,7 +641,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const fullPath = currentPath + folderName + '/';
           
           // Create folder metadata if not already created
-          const folderKey = `${userId}${fullPath}`;
+          const folderKey = `${userPrefix}${fullPath}`;
           if (!createdFolders.has(folderKey)) {
             try {
               await storage.createFile({
@@ -656,7 +663,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // Upload file to S3
-        const s3Key = `${userId}${currentPath}${filename}`;
+        const s3Key = `${userPrefix}${currentPath}${filename}`;
         await uploadToS3(s3Key, file.buffer, file.mimetype);
         
         // Save file metadata
@@ -684,6 +691,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/files/folder', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const userPrefix = getUserS3Prefix(req.user);
       const { name, path } = createFolderSchema.parse(req.body);
 
       // Check if uploads are allowed
@@ -693,7 +701,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Create folder metadata
-      const s3Key = `${userId}${path}${name}/`;
+      const s3Key = `${userPrefix}${path}${name}/`;
       
       const folder = await storage.createFile({
         userId,
