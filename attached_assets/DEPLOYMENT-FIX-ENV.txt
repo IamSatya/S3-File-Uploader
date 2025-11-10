@@ -1,0 +1,85 @@
+FIXING ENVIRONMENT VARIABLE LOADING - DEPLOYMENT GUIDE
+======================================================
+
+PROBLEM: PM2 is not loading .env file before the application starts.
+SOLUTION: Load .env explicitly in the code using dotenv package.
+
+FILES CHANGED:
+--------------
+1. server/index.ts - Added `import 'dotenv/config'` at the very top
+
+DEPLOYMENT STEPS:
+-----------------
+
+1. Navigate to your app directory:
+   cd /var/www/hackfiles
+
+2. Install dotenv package (if not already installed):
+   npm install dotenv
+
+3. Copy the updated server/index.ts file from attached_assets:
+   # Download the new server/index.ts from Replit
+   # Then copy it:
+   cp /path/to/downloaded/index.ts server/index.ts
+
+4. Rebuild the application:
+   npm run build
+
+5. Stop and restart PM2 with environment update:
+   pm2 delete hackfiles
+   pm2 start ecosystem.config.cjs --env production --update-env
+
+6. Check the logs - Should NOT see DATABASE_URL errors:
+   pm2 logs hackfiles --lines 30
+
+7. Test login:
+   - Open your app in browser
+   - Try logging in with your credentials
+   - Try uploading a file
+
+WHAT CHANGED:
+-------------
+Previously: PM2's env_file option was not reliably loading .env
+Now: Application loads .env file explicitly before any other code runs
+
+YOUR .ENV FILE FORMAT:
+----------------------
+Make sure /var/www/hackfiles/.env looks like this:
+
+DATABASE_URL=postgresql://your_user:your_password@localhost:5432/hackfiles
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_REGION=us-east-1
+AWS_S3_BUCKET_NAME=your-bucket-name
+SESSION_SECRET=your-random-secret-key
+NODE_ENV=production
+PORT=5000
+
+EXPECTED RESULTS:
+-----------------
+✅ No "DATABASE_URL must be set" errors
+✅ Server starts successfully on port 5000
+✅ Login works
+✅ File uploads work
+✅ All features functional
+
+TROUBLESHOOTING:
+----------------
+If still seeing DATABASE_URL errors:
+1. Check .env file exists: ls -la /var/www/hackfiles/.env
+2. Check .env file content: cat /var/www/hackfiles/.env
+3. Verify dotenv installed: npm list dotenv
+4. Check build output: npm run build
+5. Check PM2 logs: pm2 logs hackfiles --lines 50
+
+If login still fails:
+1. Verify PostgreSQL credentials in .env match your database
+2. Test database connection: psql -U your_user -d hackfiles
+3. Check PostgreSQL is running: sudo systemctl status postgresql
+
+SECURITY NOTE:
+--------------
+Make sure .env file has restricted permissions:
+chmod 600 /var/www/hackfiles/.env
+
+Never commit .env file to git!
