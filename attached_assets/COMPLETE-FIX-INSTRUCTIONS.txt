@@ -1,0 +1,101 @@
+COMPLETE FIX FOR CORRUPTED FILES
+==================================
+
+Your routes.ts file got corrupted again (contains index.ts content).
+This package contains ALL the correct files.
+
+WHAT'S INCLUDED:
+----------------
+✅ routes.ts - Correct routes file (855 lines, ~28KB)
+✅ index.ts - Correct server entry file (82 lines, ~2.2KB)  
+✅ Dashboard.tsx - Fixed folder upload (641 lines, ~22KB)
+
+DEPLOYMENT STEPS (on VPS):
+---------------------------
+
+# 1. Download hackfiles-fix.tar.gz from Replit attached_assets folder
+
+# 2. Upload it to your VPS and extract
+cd /var/www/hackfiles
+# Upload the hackfiles-fix.tar.gz file here
+
+# 3. Extract the files
+tar -xzf hackfiles-fix.tar.gz
+
+# 4. Copy files to correct locations
+cp routes.ts server/routes.ts
+cp index.ts server/index.ts
+cp Dashboard.tsx client/src/pages/Dashboard.tsx
+
+# 5. Verify routes.ts is correct (should NOT import from itself)
+head -5 server/routes.ts
+# Expected output:
+#   import type { Express } from "express";
+#   import { createServer, type Server } from "http";
+#   import multer from "multer";
+#   import passport from "passport";
+#   import bcrypt from "bcrypt";
+
+# 6. Clean rebuild
+rm -rf dist/
+npm run build 2>&1 | tee build.log
+
+# 7. Check for warnings (should be CLEAN)
+grep -i "registerRoutes" build.log
+# Should output NOTHING (no warnings)
+
+# 8. Restart PM2
+pm2 restart hackfiles
+
+# 9. Check logs (wait 3 seconds)
+sleep 3
+pm2 logs hackfiles --lines 30 --nostream
+
+# 10. Test uploads
+# - Try single file upload → Should work ✅
+# - Try folder upload → Should work ✅
+
+VERIFICATION:
+-------------
+
+✅ Build should be CLEAN (no registerRoutes warnings)
+✅ PM2 logs should show: "serving on port 5000"
+✅ No "void 0 is not a function" errors
+✅ File upload should return 200
+✅ Folder upload should return 200
+
+TROUBLESHOOTING:
+----------------
+
+If still getting errors:
+
+1. Check file sizes:
+   ls -lh server/routes.ts server/index.ts client/src/pages/Dashboard.tsx
+   
+   Expected:
+   - routes.ts: ~28KB (855 lines)
+   - index.ts: ~2.2KB (82 lines)
+   - Dashboard.tsx: ~22KB (641 lines)
+
+2. If sizes are wrong, files didn't copy correctly. Re-extract and copy again.
+
+3. Make sure you ran: rm -rf dist/ before rebuilding
+
+4. Delete PM2 logs and restart fresh:
+   pm2 delete hackfiles
+   rm -rf logs/pm2-*.log
+   pm2 start ecosystem.config.cjs
+   pm2 logs hackfiles
+
+SUPPORT:
+--------
+
+After deployment, if you see:
+✅ "8:XX:XX AM [express] serving on port 5000" → SUCCESS!
+✅ "POST /api/files/upload 200" → File upload works!
+✅ "POST /api/files/upload-folder 200" → Folder upload works!
+
+If you see errors, share:
+1. Output of: head -5 server/routes.ts
+2. Output of: npm run build
+3. Output of: pm2 logs hackfiles --lines 30 --nostream
