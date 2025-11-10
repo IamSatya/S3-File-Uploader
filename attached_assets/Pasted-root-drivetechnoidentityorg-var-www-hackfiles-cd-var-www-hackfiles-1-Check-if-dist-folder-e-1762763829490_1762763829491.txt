@@ -1,0 +1,103 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# cd /var/www/hackfiles
+
+# 1. Check if dist folder exists from old build
+ls -la dist/
+
+# 2. Remove old build completely
+rm -rf dist/
+
+# 3. Rebuild with the new --target=node18 flag
+npm run build 2>&1 | tee build-output.txt
+
+# 4. Show me the build output
+cat build-output.txt
+
+# 5. Check if registerRoutes export exists in the bundle
+grep -n "registerRoutes" dist/index.js | head -5
+total 20
+drwxr-xr-x  3 root root 4096 Nov 10 08:34 .
+drwxr-xr-x 10 root root 4096 Nov 10 08:34 ..
+-rw-r--r--  1 root root 6204 Nov 10 08:34 index.js
+drwxr-xr-x  3 root root 4096 Nov 10 08:34 public
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --target=node18 --outdir=dist
+
+vite v5.4.20 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 2158 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                             0.96 kB │ gzip:   0.52 kB
+../dist/public/assets/hacktivate-bg-CEwaBy6a.jpg  1,451.22 kB
+../dist/public/assets/index-q7OqLhZy.css             74.19 kB │ gzip:  12.03 kB
+../dist/public/assets/index-osa_UVDp.js             669.33 kB │ gzip: 201.43 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.05s
+▲ [WARNING] Import "registerRoutes" will always be undefined because the file "server/routes.ts" has no exports [import-is-undefined]
+
+    server/routes.ts:3:9:
+      3 │ import { registerRoutes } from "./routes";
+        ╵          ~~~~~~~~~~~~~~
+
+▲ [WARNING] Import "registerRoutes" will always be undefined because the file "server/routes.ts" has no exports [import-is-undefined]
+
+    server/index.ts:3:9:
+      3 │ import { registerRoutes } from "./routes";
+        ╵          ~~~~~~~~~~~~~~
+
+2 warnings
+
+  dist/index.js  6.1kb
+
+⚡ Done in 10ms
+
+> rest-express@1.0.0 build
+> vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --target=node18 --outdir=dist
+
+vite v5.4.20 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 13 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+✓ 2158 modules transformed.
+rendering chunks...
+computing gzip size...
+../dist/public/index.html                             0.96 kB │ gzip:   0.52 kB
+../dist/public/assets/hacktivate-bg-CEwaBy6a.jpg  1,451.22 kB
+../dist/public/assets/index-q7OqLhZy.css             74.19 kB │ gzip:  12.03 kB
+../dist/public/assets/index-osa_UVDp.js             669.33 kB │ gzip: 201.43 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.05s
+▲ [WARNING] Import "registerRoutes" will always be undefined because the file "server/routes.ts" has no exports [import-is-undefined]
+
+    server/routes.ts:3:9:
+      3 │ import { registerRoutes } from "./routes";
+        ╵          ~~~~~~~~~~~~~~
+
+▲ [WARNING] Import "registerRoutes" will always be undefined because the file "server/routes.ts" has no exports [import-is-undefined]
+
+    server/index.ts:3:9:
+      3 │ import { registerRoutes } from "./routes";
+        ╵          ~~~~~~~~~~~~~~
+
+2 warnings
+
+  dist/index.js  6.1kb
+
+⚡ Done in 10ms
