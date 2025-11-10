@@ -1,0 +1,79 @@
+HackTIvate REBRANDING - INSTALLATION GUIDE
+==========================================
+
+This package contains the complete rebranding from "HackFiles" to "HackTIvate" 
+with the beautiful HackTIvate 2025 background image.
+
+Files Included:
+---------------
+1. hacktivate-bg.jpg     → attached_assets/hacktivate-bg.jpg (background image)
+2. index.html            → client/index.html (page title & meta)
+3. Landing.tsx           → client/src/pages/Landing.tsx (login page with background)
+4. Dashboard.tsx         → client/src/pages/Dashboard.tsx (dashboard header)
+5. WelcomeInstructions.tsx → client/src/components/WelcomeInstructions.tsx (help section)
+
+Installation Steps:
+-------------------
+1. Download all files from attached_assets folder
+
+2. Copy files to your local project:
+   hacktivate-bg.jpg     → /var/www/hackfiles/attached_assets/hacktivate-bg.jpg
+   index.html            → /var/www/hackfiles/client/index.html
+   Landing.tsx           → /var/www/hackfiles/client/src/pages/Landing.tsx
+   Dashboard.tsx         → /var/www/hackfiles/client/src/pages/Dashboard.tsx
+   WelcomeInstructions.tsx → /var/www/hackfiles/client/src/components/WelcomeInstructions.tsx
+
+3. Build and restart:
+   cd /var/www/hackfiles
+   npm run build
+   pm2 restart all
+
+4. Clear browser cache:
+   - Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+   - Or open in Incognito mode
+
+Changes Made:
+-------------
+✅ Complete rebrand from "HackFiles" to "HackTIvate"
+✅ Updated page title and meta description
+✅ Added HackTIvate 2025 background image to landing page
+✅ Styled with dark overlay for better readability
+✅ White text with drop shadows for contrast
+✅ Backdrop blur effects on header, card, and footer
+✅ Updated all user-facing text references
+
+Visual Features:
+----------------
+- Beautiful gradient background (blue/pink tech theme)
+- Dark overlay (40% opacity) for text readability
+- White text with drop shadows
+- Frosted glass effect (backdrop-blur) on UI elements
+- Consistent branding across login and dashboard pages
+
+Testing:
+--------
+1. Visit your app homepage
+2. You should see the HackTIvate 2025 background image
+3. All text should say "HackTIvate" instead of "HackFiles"
+4. Login/register form should have frosted glass effect
+5. Header and footer should be semi-transparent with blur
+
+Troubleshooting:
+----------------
+If you see old "HackFiles" branding:
+- Clear your browser cache completely
+- Try opening in Incognito/Private window
+- Make sure you ran npm run build before pm2 restart
+
+If background image doesn't show:
+- Verify hacktivate-bg.jpg is in attached_assets folder
+- Check browser console for 404 errors
+- Rebuild: npm run build
+
+Support:
+--------
+The rebranding is complete! Your app now displays:
+- "HackTIvate" in page title
+- "HackTIvate 2025" in headers and welcome text  
+- Beautiful background matching your hackathon branding
+- Professional, modern UI with great readability
