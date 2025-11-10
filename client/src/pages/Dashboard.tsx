@@ -518,29 +518,30 @@ export default function Dashboard() {
         )}
 
         <div className="space-y-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <Breadcrumb path={currentPath} onNavigate={setCurrentPath} />
-              
-              <div className="flex flex-wrap items-center gap-2">
-              <Button
-                onClick={toggleSelectionMode}
-                variant={selectionMode ? "default" : "outline"}
-                data-testid="button-toggle-selection"
-              >
-                <CheckSquare className="mr-2 h-4 w-4" />
-                {selectionMode ? 'Cancel Select' : 'Select'}
-              </Button>
+          <div className="bg-card/95 backdrop-blur-sm border rounded-lg p-4 shadow-sm">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <Breadcrumb path={currentPath} onNavigate={setCurrentPath} />
+                
+                <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  onClick={toggleSelectionMode}
+                  variant={selectionMode ? "default" : "outline"}
+                  data-testid="button-toggle-selection"
+                >
+                  <CheckSquare className="mr-2 h-4 w-4" />
+                  {selectionMode ? 'Cancel Select' : 'Select'}
+                </Button>
 
-              <Button
-                onClick={() => setShowCreateFolder(true)}
-                variant="outline"
-                disabled={uploadDisabled || selectionMode}
-                data-testid="button-create-folder"
-              >
-                <FolderPlus className="mr-2 h-4 w-4" />
-                New Folder
-              </Button>
+                <Button
+                  onClick={() => setShowCreateFolder(true)}
+                  variant="outline"
+                  disabled={uploadDisabled || selectionMode}
+                  data-testid="button-create-folder"
+                >
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  New Folder
+                </Button>
               
               <Button
                 asChild
@@ -590,6 +591,7 @@ export default function Dashboard() {
               dateRange={dateRange}
               onDateRangeChange={setDateRange}
             />
+            </div>
           </div>
 
           {!uploadDisabled && (
