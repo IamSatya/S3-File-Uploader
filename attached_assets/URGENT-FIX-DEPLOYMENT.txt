@@ -1,0 +1,68 @@
+URGENT FIX - "registerRoutes is undefined" ERROR
+==================================================
+
+PROBLEM: Build warning "Import registerRoutes will always be undefined"
+CAUSE: The routes.ts file you copied might be corrupted or incomplete
+
+SOLUTION: Download the FIXED versions
+-----------------------------------------
+
+USE THESE FILES (in attached_assets):
+1. routes-FIXED.ts  → Copy to /var/www/hackfiles/server/routes.ts
+2. index-FIXED.ts   → Copy to /var/www/hackfiles/server/index.ts
+
+DEPLOYMENT COMMANDS:
+--------------------
+
+# 1. Navigate to your app
+cd /var/www/hackfiles
+
+# 2. Download the FIXED files from Replit attached_assets folder
+#    Download: routes-FIXED.ts
+#    Download: index-FIXED.ts
+
+# 3. Copy them to the correct locations
+cp routes-FIXED.ts server/routes.ts
+cp index-FIXED.ts server/index.ts
+
+# 4. Verify the export exists
+grep "export async function registerRoutes" server/routes.ts
+# Should output: export async function registerRoutes(app: Express): Promise<Server> {
+
+# 5. Rebuild
+npm run build
+
+# 6. Check for build warnings
+# You should NOT see: "Import registerRoutes will always be undefined"
+
+# 7. If build is clean, restart PM2
+pm2 restart hackfiles --update-env
+
+# 8. Check logs
+pm2 logs hackfiles --lines 20
+
+EXPECTED BUILD OUTPUT:
+----------------------
+✓ built in X.XXs
+✓ Done in XXms
+
+NO warnings about registerRoutes!
+
+EXPECTED PM2 LOGS:
+------------------
+✅ "serving on port 5000"
+✅ "POST /api/auth/login 200" (successful login)
+✅ No "void 0 is not a function" errors
+✅ No "registerRoutes is undefined" errors
+
+VERIFICATION:
+-------------
+After successful deployment:
+1. Login to your app → Should work
+2. Try uploading a file → Should work
+3. Check PM2 logs → Should see "POST /api/files/upload 200"
+
+If you still see the registerRoutes error:
+1. Make sure you copied routes-FIXED.ts to server/routes.ts (not routes.ts to routes.ts)
+2. Check file permissions: chmod 644 server/*.ts
+3. Delete node_modules/.cache and rebuild
