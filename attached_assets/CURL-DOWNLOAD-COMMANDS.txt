@@ -1,0 +1,60 @@
+📥 DOWNLOAD FILES USING CURL (from VPS)
+==========================================
+
+Run these commands ON YOUR VPS to download the fixed files directly:
+
+STEP 1: Download Files
+-----------------------
+
+cd /var/www/hackfiles
+
+# Download routes.ts
+curl -o server/routes.ts "https://[YOUR-REPL-URL]/download-routes-fixed"
+
+# Download index.ts
+curl -o server/index.ts "https://[YOUR-REPL-URL]/download-index-fixed"
+
+# Download Dashboard.tsx
+curl -o client/src/pages/Dashboard.tsx "https://[YOUR-REPL-URL]/download-dashboard-fixed"
+
+
+STEP 2: Verify Files
+---------------------
+
+# Check routes.ts (should show "import type")
+head -1 server/routes.ts
+
+# Check file sizes
+ls -lh server/routes.ts server/index.ts client/src/pages/Dashboard.tsx
+
+
+STEP 3: Rebuild
+----------------
+
+rm -rf dist/
+npm run build
+
+# Should see NO warnings about registerRoutes!
+
+
+STEP 4: Restart PM2
+-------------------
+
+pm2 restart hackfiles
+pm2 logs hackfiles --lines 20
+
+
+EXPECTED RESULTS:
+-----------------
+
+✅ Build completes with NO warnings
+✅ PM2 shows "serving on port 5000"
+✅ File upload works
+✅ Folder upload works
+
+
+REPLACE [YOUR-REPL-URL] WITH:
+------------------------------
+
+Your actual Replit URL (check the preview window or browser address bar)
+Example: https://rest-express-username.repl.co

@@ -134,6 +134,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Download fixed routes.ts file for VPS deployment
+  app.get('/download-routes-fixed', async (req, res) => {
+    const fs = await import('fs');
+    const filePath = '/home/runner/workspace/attached_assets/routes-FIXED.ts';
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', 'attachment; filename="routes.ts"');
+    res.setHeader('Cache-Control', 'no-store');
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  });
+
+  // Download fixed index.ts file for VPS deployment
+  app.get('/download-index-fixed', async (req, res) => {
+    const fs = await import('fs');
+    const filePath = '/home/runner/workspace/attached_assets/index-FIXED.ts';
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', 'attachment; filename="index.ts"');
+    res.setHeader('Cache-Control', 'no-store');
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  });
+
+  // Download fixed Dashboard.tsx file for VPS deployment
+  app.get('/download-dashboard-fixed', async (req, res) => {
+    const fs = await import('fs');
+    const filePath = '/home/runner/workspace/attached_assets/Dashboard-FIXED.tsx';
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', 'attachment; filename="Dashboard.tsx"');
+    res.setHeader('Cache-Control', 'no-store');
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  });
+
   // Auth routes
   app.post('/api/auth/register', async (req, res) => {
     try {
