@@ -1,0 +1,37 @@
+root@drivetechnoidentityorg:/var/www/hackfiles# pm2 logs hackfiles --lines 20 --nostream
+[TAILING] Tailing last 20 lines for [hackfiles] process (change the value with --lines option)
+/var/www/hackfiles/logs/pm2-error.log last 20 lines:
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | TypeError: (void 0) is not a function
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:153:32
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:173:3
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | TypeError: (void 0) is not a function
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:208:32
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:228:3
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+
+/var/www/hackfiles/logs/pm2-out.log last 20 lines:
+0|hackfile | 2025-11-10T11:03:18: [upload-folder] files originalname sample: []
+0|hackfile | 2025-11-10T11:03:18: [upload-folder] final paths length: 0 files length: 0
+0|hackfile | 2025-11-10T11:03:18: 11:03:18 AM [express] POST /api/files/upload-folder 400 in 26ms :: {"message":"No files provided"}
+0|hackfile | 2025-11-10T11:03:27: 11:03:27 AM [express] POST /api/files/upload 200 in 286ms :: {"success":true,"files":[{"id":"d1003e79…
+0|hackfile | 2025-11-10T11:03:27: 11:03:27 AM [express] GET /api/files 200 in 14ms :: [{"id":"d1003e79-b303-4f44-89b7-c5977fea8558","us…
+0|hackfile | 2025-11-10T11:03:42: 11:03:42 AM [express] POST /api/files/folder 200 in 51ms :: {"id":"8fe2d3a6-26b3-42b5-8532-74381a6a2c…
+0|hackfile | 2025-11-10T11:03:42: 11:03:42 AM [express] GET /api/files 200 in 13ms :: [{"id":"d1003e79-b303-4f44-89b7-c5977fea8558","us…
+0|hackfile | 2025-11-10T11:03:44: 11:03:44 AM [express] GET /api/files 200 in 14ms :: []
+0|hackfile | 2025-11-10T11:03:49: 11:03:49 AM [express] POST /api/files/upload 200 in 202ms :: {"success":true,"files":[{"id":"32cd655f…
+0|hackfile | 2025-11-10T11:03:49: 11:03:49 AM [express] GET /api/files 304 in 44ms :: [{"id":"d1003e79-b303-4f44-89b7-c5977fea8558","us…
+0|hackfile | 2025-11-10T11:03:49: 11:03:49 AM [express] GET /api/files 200 in 44ms :: [{"id":"32cd655f-7ffe-4efa-b9fa-e7585a46d619","us…
+0|hackfile | 2025-11-10T11:05:41: 11:05:41 AM [express] GET /api/auth/user 304 in 11ms :: {"id":"ca4b379a-c244-49b4-b982-309317602862",…
+0|hackfile | 2025-11-10T11:05:41: 11:05:41 AM [express] GET /api/timer-config 304 in 12ms :: {"id":"default","deadline":"2025-11-13T14:…
+0|hackfile | 2025-11-10T11:05:41: 11:05:41 AM [express] GET /api/files 304 in 12ms :: [{"id":"d1003e79-b303-4f44-89b7-c5977fea8558","us…
+0|hackfile | 2025-11-10T11:05:54: [upload-folder] files received: 0
+0|hackfile | 2025-11-10T11:05:54: [upload-folder] relativePaths count: 0
+0|hackfile | 2025-11-10T11:05:54: [upload-folder] request body keys sample: [ 'path' ]
+0|hackfile | 2025-11-10T11:05:54: [upload-folder] files originalname sample: []
+0|hackfile | 2025-11-10T11:05:54: [upload-folder] final paths length: 0 files length: 0
+0|hackfile | 2025-11-10T11:05:54: 11:05:54 AM [express] POST /api/files/upload-folder 400 in 39ms :: {"message":"No files provided"}
