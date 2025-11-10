@@ -1,39 +1,26 @@
-import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { Upload, FolderOpen, Clock, Shield, Download, Trash2 } from 'lucide-react';
-import { loginSchema, registerSchema, type LoginInput, type RegisterInput } from '@shared/schema';
+import { FolderOpen } from 'lucide-react';
+import { loginSchema, type LoginInput } from '@shared/schema';
 import { HacktivateBackgroundLayout } from '@/components/HacktivateBackgroundLayout';
 
 export default function Landing() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
 
   const loginForm = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: '',
       password: '',
-    },
-  });
-
-  const registerForm = useForm<RegisterInput>({
-    resolver: zodResolver(registerSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      firstName: '',
-      lastName: '',
     },
   });
 
@@ -54,33 +41,8 @@ export default function Landing() {
     },
   });
 
-  const registerMutation = useMutation({
-    mutationFn: async (data: RegisterInput) => {
-      return await apiRequest('POST', '/api/auth/register', data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      toast({
-        title: "Success",
-        description: "Account created successfully!",
-      });
-      navigate('/');
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Registration Failed",
-        description: error.message || "Failed to create account",
-        variant: "destructive",
-      });
-    },
-  });
-
   const onLogin = (data: LoginInput) => {
     loginMutation.mutate(data);
-  };
-
-  const onRegister = (data: RegisterInput) => {
-    registerMutation.mutate(data);
   };
 
   return (
@@ -109,122 +71,49 @@ export default function Landing() {
 
           <Card className="backdrop-blur-md bg-background/95">
             <CardContent className="pt-6">
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'login' | 'register')}>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
-                  <TabsTrigger value="register" data-testid="tab-register">Register</TabsTrigger>
-                </TabsList>
+              <div className="text-center mb-6">
+                <h3 className="text-lg font-semibold">Login to Continue</h3>
+                <p className="text-sm text-muted-foreground mt-1">Contact an administrator to create your account</p>
+              </div>
+              
+              <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    {...loginForm.register('email')}
+                    data-testid="input-login-email"
+                  />
+                  {loginForm.formState.errors.email && (
+                    <p className="text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
+                  )}
+                </div>
 
-                <TabsContent value="login">
-                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="login-email">Email</Label>
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        {...loginForm.register('email')}
-                        data-testid="input-login-email"
-                      />
-                      {loginForm.formState.errors.email && (
-                        <p className="text-sm text-destructive">{loginForm.formState.errors.email.message}</p>
-                      )}
-                    </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Password</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="Enter your password"
+                    {...loginForm.register('password')}
+                    data-testid="input-login-password"
+                  />
+                  {loginForm.formState.errors.password && (
+                    <p className="text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
+                  )}
+                </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="login-password">Password</Label>
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="Enter your password"
-                        {...loginForm.register('password')}
-                        data-testid="input-login-password"
-                      />
-                      {loginForm.formState.errors.password && (
-                        <p className="text-sm text-destructive">{loginForm.formState.errors.password.message}</p>
-                      )}
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={loginMutation.isPending}
-                      data-testid="button-login"
-                    >
-                      {loginMutation.isPending ? 'Logging in...' : 'Login'}
-                    </Button>
-                  </form>
-                </TabsContent>
-
-                <TabsContent value="register">
-                  <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-email">Email</Label>
-                      <Input
-                        id="register-email"
-                        type="email"
-                        placeholder="Enter your email"
-                        {...registerForm.register('email')}
-                        data-testid="input-register-email"
-                      />
-                      {registerForm.formState.errors.email && (
-                        <p className="text-sm text-destructive">{registerForm.formState.errors.email.message}</p>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="register-firstName">First Name</Label>
-                        <Input
-                          id="register-firstName"
-                          placeholder="John"
-                          {...registerForm.register('firstName')}
-                          data-testid="input-register-firstName"
-                        />
-                        {registerForm.formState.errors.firstName && (
-                          <p className="text-sm text-destructive">{registerForm.formState.errors.firstName.message}</p>
-                        )}
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="register-lastName">Last Name</Label>
-                        <Input
-                          id="register-lastName"
-                          placeholder="Doe"
-                          {...registerForm.register('lastName')}
-                          data-testid="input-register-lastName"
-                        />
-                        {registerForm.formState.errors.lastName && (
-                          <p className="text-sm text-destructive">{registerForm.formState.errors.lastName.message}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Password</Label>
-                      <Input
-                        id="register-password"
-                        type="password"
-                        placeholder="At least 8 characters"
-                        {...registerForm.register('password')}
-                        data-testid="input-register-password"
-                      />
-                      {registerForm.formState.errors.password && (
-                        <p className="text-sm text-destructive">{registerForm.formState.errors.password.message}</p>
-                      )}
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full"
-                      disabled={registerMutation.isPending}
-                      data-testid="button-register"
-                    >
-                      {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={loginMutation.isPending}
+                  data-testid="button-login"
+                >
+                  {loginMutation.isPending ? 'Logging in...' : 'Login'}
+                </Button>
+              </form>
             </CardContent>
           </Card>
 

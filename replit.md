@@ -8,13 +8,16 @@ The platform allows users to authenticate via Replit Auth, upload files and fold
 
 ## Recent Changes
 
-**November 10, 2025**: Fixed folder upload functionality
-- **Critical Fix**: Folder upload now preserves FileList when input is cleared using DataTransfer API
-- Root cause: `e.target.value = ''` was clearing the FileList before mutation could access files
-- Solution: Convert FileList to Array, create new DataTransfer object to preserve files
+**November 10, 2025**: Security improvements and folder upload fix
+- **Security**: Removed public self-registration - all users must be created by administrators
+- Landing page now shows login-only form with message to contact admin for account creation
+- Admin dashboard retains full user creation functionality (`/api/admin/create-user`)
+- **Folder Upload Fix**: Preserves FileList when input is cleared using DataTransfer API
+  - Root cause: `e.target.value = ''` was clearing the FileList before mutation could access files
+  - Solution: Convert FileList to Array, create new DataTransfer object to preserve files
 - Backend uses `relativePaths[]` array syntax for FormData (required by multer)
 - Build process requires `--tree-shaking=false` to prevent esbuild from stripping registerRoutes
-- Complete background image implementation across all pages via `HacktivateBackgroundLayout` component
+- UI improvements: Added card container to navigation area for better visibility against background
 
 ## User Preferences
 
@@ -91,6 +94,7 @@ Preferred communication style: Simple, everyday language.
 - Mandatory session and user tables for Replit Auth compatibility
 
 **Access Control**
+- **Admin-only user creation**: Public registration disabled, all users must be created by administrators
 - User-scoped file access: all file operations filtered by authenticated userId
 - Time-based upload restrictions: uploads disabled when timer deadline expires
 - No file sharing between users (strict user isolation)

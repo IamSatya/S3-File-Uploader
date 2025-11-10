@@ -168,54 +168,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Auth routes
-  app.post('/api/auth/register', async (req, res) => {
-    try {
-      const result = registerSchema.safeParse(req.body);
-      
-      if (!result.success) {
-        return res.status(400).json({ 
-          message: "Validation failed", 
-          errors: result.error.flatten().fieldErrors 
-        });
-      }
-
-      const { email, password, firstName, lastName } = result.data;
-
-      // Check if user already exists
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
-        return res.status(400).json({ message: "Email already registered" });
-      }
-
-      // Hash password
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Create user
-      const user = await storage.createUser({
-        email,
-        password: hashedPassword,
-        firstName,
-        lastName,
-        isAdmin: false,
-      });
-
-      // Log in the user automatically after registration
-      req.login(user, (err) => {
-        if (err) {
-          console.error("Error logging in after registration:", err);
-          return res.status(500).json({ message: "Registration successful but login failed" });
-        }
-        
-        // Don't send password back
-        const { password: _, ...userWithoutPassword } = user;
-        res.json(userWithoutPassword);
-      });
-    } catch (error) {
-      console.error("Error during registration:", error);
-      res.status(500).json({ message: "Registration failed" });
-    }
-  });
-
+  // Note: Public registration removed - users must be created by admins via /api/admin/create-user
+  
   app.post('/api/auth/login', (req, res, next) => {
     const result = loginSchema.safeParse(req.body);
     
