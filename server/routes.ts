@@ -554,7 +554,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File upload route
   app.post('/api/files/upload', isAuthenticated, upload.array('files'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const path = req.body.path || '/';
       const files = req.files as Express.Multer.File[];
 
@@ -601,7 +601,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Folder upload route
   app.post('/api/files/upload-folder', isAuthenticated, upload.array('files'), async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const basePath = req.body.path || '/';
       const files = req.files as Express.Multer.File[];
       const relativePaths = req.body.relativePaths;
@@ -687,7 +687,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create folder route
   app.post('/api/files/folder', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { name, path } = createFolderSchema.parse(req.body);
 
       // Check if uploads are allowed
@@ -719,7 +719,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Download file route
   app.get('/api/files/download/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const fileId = req.params.id;
 
       const file = await storage.getFileById(fileId, userId);
@@ -757,7 +757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Delete file/folder route
   app.delete('/api/files/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const fileId = req.params.id;
 
       const file = await storage.getFileById(fileId, userId);
@@ -789,7 +789,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bulk delete route
   app.post('/api/files/bulk-delete', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { fileIds } = req.body;
       
       if (!Array.isArray(fileIds) || fileIds.length === 0) {

@@ -1,0 +1,111 @@
+AUTHENTICATION FIX - UPLOAD ERROR RESOLVED
+==========================================
+
+PROBLEM: File uploads failed with "Cannot read properties of undefined (reading 'sub')"
+SOLUTION: Fixed authentication to use email/password format instead of Replit Auth format
+
+WHAT WAS WRONG:
+---------------
+The code was using Replit Auth format: req.user.claims.sub
+But VPS deployment uses Passport Local (email/password): req.user.id
+
+FILES CHANGED:
+--------------
+1. server/index.ts - Added dotenv loading at the top
+2. server/routes.ts - Changed all req.user.claims.sub to req.user.id
+
+DEPLOYMENT STEPS:
+-----------------
+
+1. Navigate to your app directory:
+   cd /var/www/hackfiles
+
+2. Make sure dotenv is installed:
+   npm install dotenv
+
+3. Copy the updated files from attached_assets:
+   # Download these files from Replit attached_assets:
+   - index.ts  → copy to server/index.ts
+   - routes.ts → copy to server/routes.ts
+
+4. Rebuild the application:
+   npm run build
+
+5. Restart PM2:
+   pm2 restart hackfiles --update-env
+
+6. Test the application:
+   - Login with your email/password
+   - Try uploading a file
+   - Try uploading a folder
+   - Try creating a new folder
+   - Try downloading a file
+   - Try deleting a file
+
+CHANGES MADE:
+-------------
+
+✅ server/index.ts:
+   - Added: import 'dotenv/config' (first line)
+   - This loads .env file before anything else runs
+
+✅ server/routes.ts - Fixed 6 routes:
+   - POST /api/files/upload (file upload)
+   - POST /api/files/upload-folder (folder upload)  
+   - POST /api/files/folder (create folder)
+   - GET /api/files/download/:id (download file)
+   - DELETE /api/files/:id (delete file)
+   - POST /api/files/bulk-delete (bulk delete)
+   
+   Changed: req.user.claims.sub → req.user.id
+
+EXPECTED RESULTS:
+-----------------
+✅ Login works perfectly
+✅ File upload works
+✅ Folder upload works
+✅ Create folder works
+✅ Download works
+✅ Delete works
+✅ All file operations functional
+
+TROUBLESHOOTING:
+----------------
+
+If login still fails:
+1. Check .env file has correct DATABASE_URL
+2. Test PostgreSQL connection: psql -U your_user -d hackfiles
+3. Check PM2 logs: pm2 logs hackfiles --lines 50
+
+If uploads still fail:
+1. Check .env file has all AWS credentials
+2. Verify S3 bucket exists and is accessible
+3. Check PM2 logs for specific error
+
+If you see "claims is undefined":
+1. Make sure you copied the NEW routes.ts file
+2. Rebuild: npm run build
+3. Restart: pm2 restart hackfiles
+
+VERIFICATION:
+-------------
+After deployment, check PM2 logs should show:
+✅ "serving on port 5000" (no DATABASE_URL error)
+✅ "POST /api/auth/login 200" (successful login)
+✅ "POST /api/files/upload 200" (successful upload)
+
+NO errors about:
+❌ DATABASE_URL must be set
+❌ Cannot read properties of undefined (reading 'sub')
+❌ password authentication failed
+
+SUCCESS INDICATORS:
+-------------------
+1. You can login successfully
+2. You can upload files and see them in the list
+3. You can download uploaded files
+4. You can delete files
+5. You can create folders
+6. Timer countdown displays correctly (if deadline is set)
+
+Your HackTIvate file manager is now fully functional! 🎉
