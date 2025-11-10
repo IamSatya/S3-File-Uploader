@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Folder, File, ChevronRight, Home, FolderOpen, Settings, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { HacktivateBackgroundLayout } from "@/components/HacktivateBackgroundLayout";
 
 interface FileWithOwner {
   id: string;
@@ -110,8 +111,8 @@ export default function S3Browser() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
+    <HacktivateBackgroundLayout>
+      <header className="border-b backdrop-blur-sm bg-background/80">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
@@ -231,6 +232,6 @@ export default function S3Browser() {
           </CardContent>
         </Card>
       </main>
-    </div>
+    </HacktivateBackgroundLayout>
   );
 }

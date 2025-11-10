@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Users, HardDrive, Files, Clock, UserPlus, FolderOpen, ShieldCheck, Database, Key, Trash2 } from "lucide-react";
 import { registerSchema, resetPasswordSchema, type RegisterInput, type TimerConfig, type User, type FileMetadata, type ResetPasswordInput } from "@shared/schema";
+import { HacktivateBackgroundLayout } from "@/components/HacktivateBackgroundLayout";
 import {
   Dialog,
   DialogContent,
@@ -296,8 +297,8 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
+    <HacktivateBackgroundLayout>
+      <header className="border-b backdrop-blur-sm bg-background/80">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold" data-testid="text-admin-title">Admin Dashboard</h1>
@@ -812,6 +813,6 @@ export default function Admin() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </HacktivateBackgroundLayout>
   );
 }
