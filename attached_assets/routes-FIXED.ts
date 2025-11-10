@@ -604,7 +604,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.id;
       const basePath = req.body.path || '/';
       const files = req.files as Express.Multer.File[];
-      const relativePaths = req.body.relativePaths;
+      // Fix: FormData sends 'relativePaths[]' not 'relativePaths'
+      const relativePaths = req.body['relativePaths[]'] || req.body.relativePaths;
 
       // Check if uploads are allowed
       const uploadAllowed = await checkUploadAllowed();
