@@ -1,0 +1,30 @@
+🔧 FILE TRANSFER METHODS
+========================
+
+Since direct curl failed, here are alternative methods:
+
+METHOD 1: Use SCP (Secure Copy) from Replit to VPS
+---------------------------------------------------
+From your LOCAL machine (not VPS):
+
+# Download from Replit first
+scp runner@workspace.satyapanuganti.repl.co:/home/runner/workspace/attached_assets/routes-FIXED.ts ./
+
+# Then upload to VPS
+scp routes-FIXED.ts root@drivetechnoidentityorg:/var/www/hackfiles/server/routes.ts
+
+
+METHOD 2: Use Raw GitHub Gist
+------------------------------
+I'll create the files as text you can paste directly.
+
+
+METHOD 3: Use Base64 Encoding
+------------------------------
+I can split files into base64 chunks you paste and decode on VPS.
+
+
+RECOMMENDED: Let me split the files into CHUNKS for you to paste!
+This is the most reliable method.
+
+Which method do you prefer?
