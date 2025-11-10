@@ -313,10 +313,20 @@ export default function Dashboard() {
     const files = e.target.files;
     console.log('[FOLDER-SELECT] files:', files);
     console.log('[FOLDER-SELECT] files.length:', files?.length || 0);
+    
     if (files && files.length > 0) {
       console.log('[FOLDER-SELECT] First file:', files[0]);
       console.log('[FOLDER-SELECT] webkitRelativePath:', (files[0] as any).webkitRelativePath);
-      uploadFolderMutation.mutate(files);
+      
+      // Convert FileList to Array to prevent it from being cleared
+      const filesArray = Array.from(files);
+      console.log('[FOLDER-SELECT] Converted to array, length:', filesArray.length);
+      
+      // Create a new DataTransfer to preserve the files
+      const dataTransfer = new DataTransfer();
+      filesArray.forEach(file => dataTransfer.items.add(file));
+      
+      uploadFolderMutation.mutate(dataTransfer.files);
     } else {
       console.error('[FOLDER-SELECT] ERROR: No files in FileList!');
     }
