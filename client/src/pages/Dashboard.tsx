@@ -163,13 +163,24 @@ export default function Dashboard() {
 
   const uploadFolderMutation = useMutation({
     mutationFn: async (files: FileList) => {
+      console.log('[UPLOAD-FOLDER-MUTATION] Starting with', files.length, 'files');
       const formData = new FormData();
       formData.append('path', currentPath);
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
+        console.log(`[UPLOAD-FOLDER-MUTATION] File ${i}:`, file.name, file.size, 'bytes');
         formData.append('files', file);
         formData.append('relativePaths[]', (file as any).webkitRelativePath || file.name);
+      }
+
+      console.log('[UPLOAD-FOLDER-MUTATION] FormData entries:');
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}:`, value.name, value.size, 'bytes');
+        } else {
+          console.log(`  ${key}:`, value);
+        }
       }
 
       const response = await fetch('/api/files/upload-folder', {
@@ -300,8 +311,14 @@ export default function Dashboard() {
 
   const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+    console.log('[FOLDER-SELECT] files:', files);
+    console.log('[FOLDER-SELECT] files.length:', files?.length || 0);
     if (files && files.length > 0) {
+      console.log('[FOLDER-SELECT] First file:', files[0]);
+      console.log('[FOLDER-SELECT] webkitRelativePath:', (files[0] as any).webkitRelativePath);
       uploadFolderMutation.mutate(files);
+    } else {
+      console.error('[FOLDER-SELECT] ERROR: No files in FileList!');
     }
     e.target.value = '';
   };
