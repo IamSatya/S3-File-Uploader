@@ -1,0 +1,101 @@
+/var/www/hackfiles/logs/pm2-error.log last 100 lines:
+0|hackfile |   table: undefined,
+0|hackfile |   column: undefined,
+0|hackfile |   dataType: undefined,
+0|hackfile |   constraint: undefined,
+0|hackfile |   file: 'auth.c',
+0|hackfile |   line: '331',
+0|hackfile |   routine: 'auth_failed'
+0|hackfile | }
+0|hackfile | 2025-11-10T07:53:29: Error during login: error: password authentication failed for user "username"
+0|hackfile |     at /var/www/hackfiles/node_modules/pg-pool/index.js:45:11
+0|hackfile |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|hackfile |     at async file:///var/www/hackfiles/node_modules/drizzle-orm/node-postgres/session.js:83:22
+0|hackfile |     at async DatabaseStorage.getUserByEmail (file:///var/www/hackfiles/dist/index.js:148:20)
+0|hackfile |     at async Strategy._verify (file:///var/www/hackfiles/dist/index.js:290:24) {
+0|hackfile |   length: 104,
+0|hackfile |   severity: 'FATAL',
+0|hackfile |   code: '28P01',
+0|hackfile |   detail: undefined,
+0|hackfile |   hint: undefined,
+0|hackfile |   position: undefined,
+0|hackfile |   internalPosition: undefined,
+0|hackfile |   internalQuery: undefined,
+0|hackfile |   where: undefined,
+0|hackfile |   schema: undefined,
+0|hackfile |   table: undefined,
+0|hackfile |   column: undefined,
+0|hackfile |   dataType: undefined,
+0|hackfile |   constraint: undefined,
+0|hackfile |   file: 'auth.c',
+0|hackfile |   line: '331',
+0|hackfile |   routine: 'auth_failed'
+0|hackfile | }
+0|hackfile | 2025-11-10T07:53:30: Error during login: error: password authentication failed for user "username"
+0|hackfile |     at /var/www/hackfiles/node_modules/pg-pool/index.js:45:11
+0|hackfile |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+0|hackfile |     at async file:///var/www/hackfiles/node_modules/drizzle-orm/node-postgres/session.js:83:22
+0|hackfile |     at async DatabaseStorage.getUserByEmail (file:///var/www/hackfiles/dist/index.js:148:20)
+0|hackfile |     at async Strategy._verify (file:///var/www/hackfiles/dist/index.js:290:24) {
+0|hackfile |   length: 104,
+0|hackfile |   severity: 'FATAL',
+0|hackfile |   code: '28P01',
+0|hackfile |   detail: undefined,
+0|hackfile |   hint: undefined,
+0|hackfile |   position: undefined,
+0|hackfile |   internalPosition: undefined,
+0|hackfile |   internalQuery: undefined,
+0|hackfile |   where: undefined,
+0|hackfile |   schema: undefined,
+0|hackfile |   table: undefined,
+0|hackfile |   column: undefined,
+0|hackfile |   dataType: undefined,
+0|hackfile |   constraint: undefined,
+0|hackfile |   file: 'auth.c',
+0|hackfile |   line: '331',
+0|hackfile |   routine: 'auth_failed'
+0|hackfile | }
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:130:9
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | Error: DATABASE_URL must be set. Did you forget to provision a database?
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:130:9
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|hackfile | 2025-11-10T08:08:12: Error uploading folder: TypeError: Cannot read properties of undefined (reading 'sub')
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:831:38
+0|hackfile |     at Layer.handle [as handle_request] (/var/www/hackfiles/node_modules/express/lib/router/layer.js:95:5)
+0|hackfile |     at next (/var/www/hackfiles/node_modules/express/lib/router/route.js:149:13)
+0|hackfile |     at done (/var/www/hackfiles/node_modules/multer/lib/make-middleware.js:59:7)
+0|hackfile |     at indicateDone (/var/www/hackfiles/node_modules/multer/lib/make-middleware.js:63:68)
+0|hackfile |     at Multipart.<anonymous> (/var/www/hackfiles/node_modules/multer/lib/make-middleware.js:187:7)
+0|hackfile |     at Multipart.emit (node:events:524:28)
+0|hackfile |     at emitCloseNT (node:internal/streams/destroy:147:10)
+0|hackfile |     at process.processTicksAndRejections (node:internal/process/task_queues:81:21)
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | TypeError: (void 0) is not a function
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:153:32
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:173:3
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | TypeError: (void 0) is not a function
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:208:32
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:228:3
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | TypeError: (void 0) is not a function
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:153:32
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:173:3
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
+0|hackfile | You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+0|hackfile | TypeError: (void 0) is not a function
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:208:32
+0|hackfile |     at file:///var/www/hackfiles/dist/index.js:228:3
+0|hackfile |     at ModuleJob.run (node:internal/modules/esm/module_job:325:25)
+0|hackfile |     at async ModuleLoader.import (node:internal/modules/esm/loader:606:24)
