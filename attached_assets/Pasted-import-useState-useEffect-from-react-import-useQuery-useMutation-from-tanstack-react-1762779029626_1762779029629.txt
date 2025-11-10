@@ -1,0 +1,658 @@
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
+import { isUnauthorizedError } from '@/lib/authUtils';
+import { apiRequest, queryClient } from '@/lib/queryClient';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { CountdownTimer } from '@/components/CountdownTimer';
+import { WelcomeInstructions } from '@/components/WelcomeInstructions';
+import { Breadcrumb } from '@/components/Breadcrumb';
+import { FileCard } from '@/components/FileCard';
+import { CreateFolderDialog } from '@/components/CreateFolderDialog';
+import { DeleteConfirmDialog } from '@/components/DeleteConfirmDialog';
+import { FileUploadZone } from '@/components/FileUploadZone';
+import { FileSearchBar } from '@/components/FileSearchBar';
+import { FilePreviewModal } from '@/components/FilePreviewModal';
+import { BulkActionBar } from '@/components/BulkActionBar';
+import { FolderPlus, Upload, LogOut, FolderOpen, Loader2, CheckSquare, Settings, Database, HelpCircle } from 'lucide-react';
+import type { FileMetadata, TimerConfig } from '@shared/schema';
+import JSZip from 'jszip';
+import { HacktivateBackgroundLayout } from '@/components/HacktivateBackgroundLayout';
+
+export default function Dashboard() {
+  const { user } = useAuth();
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  const [currentPath, setCurrentPath] = useState('/');
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [showCreateFolder, setShowCreateFolder] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState<FileMetadata | null>(null);
+  const [search, setSearch] = useState('');
+  const [fileType, setFileType] = useState('all');
+  const [dateRange, setDateRange] = useState('all');
+  const [fileToPreview, setFileToPreview] = useState<FileMetadata | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
+
+  const { data: files = [], isLoading: filesLoading, error } = useQuery<FileMetadata[]>({
+    queryKey: ['/api/files', currentPath, search, fileType, dateRange],
+    queryFn: async () => {
+      const params = new URLSearchParams({ path: currentPath });
+      if (search) params.append('search', search);
+      if (fileType && fileType !== 'all') params.append('fileType', fileType);
+      if (dateRange && dateRange !== 'all') params.append('dateRange', dateRange);
+
+      const response = await fetch(`/api/files?${params}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fetch files');
+      }
+      return response.json();
+    },
+  });
+
+  // Clear selection when path or files change
+  useEffect(() => {
+    setSelectedFiles(new Set());
+    setSelectionMode(false);
+  }, [currentPath]);
+
+  // Handle query errors
+  useEffect(() => {
+    if (error && isUnauthorizedError(error as Error)) {
+      toast({
+        title: "Unauthorized",
+        description: "You are logged out. Logging in again...",
+        variant: "destructive",
+      });
+      setTimeout(() => {
+        window.location.href = "/api/login";
+      }, 500);
+    }
+  }, [error, toast]);
+
+  const { data: timerConfig } = useQuery<TimerConfig>({
+    queryKey: ['/api/timer-config'],
+  });
+
+  const uploadDisabled = timerConfig ? new Date(timerConfig.deadline) <= new Date() : false;
+
+  const createFolderMutation = useMutation({
+    mutationFn: async (name: string) => {
+      await apiRequest('POST', '/api/files/folder', { name, path: currentPath });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
+      setShowCreateFolder(false);
+      toast({
+        title: "Success",
+        description: "Folder created successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to create folder",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const uploadMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      const formData = new FormData();
+      formData.append('path', currentPath);
+
+      for (let i = 0; i < files.length; i++) {
+        formData.append('files', files[i]);
+      }
+
+      const response = await fetch('/api/files/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload failed');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
+      toast({
+        title: "Success",
+        description: "Files uploaded successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload files",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const uploadFolderMutation = useMutation({
+    mutationFn: async (files: FileList) => {
+      console.log('[UPLOAD-FOLDER-MUTATION] Starting with', files.length, 'files');
+      const formData = new FormData();
+      formData.append('path', currentPath);
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        console.log(`[UPLOAD-FOLDER-MUTATION] File ${i}:`, file.name, file.size, 'bytes');
+        formData.append('files', file);
+        formData.append('relativePaths[]', (file as any).webkitRelativePath || file.name);
+      }
+
+      console.log('[UPLOAD-FOLDER-MUTATION] FormData entries:');
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`  ${key}:`, value.name, value.size, 'bytes');
+        } else {
+          console.log(`  ${key}:`, value);
+        }
+      }
+
+      const response = await fetch('/api/files/upload-folder', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Upload failed');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
+      toast({
+        title: "Success",
+        description: "Folder uploaded successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload folder",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      await apiRequest('DELETE', `/api/files/${fileId}`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
+      setFileToDelete(null);
+      toast({
+        title: "Success",
+        description: "File deleted successfully",
+      });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Error",
+        description: "Failed to delete file",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (fileIds: string[]) => {
+      const response = await apiRequest('POST', '/api/files/bulk-delete', { fileIds });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/files'], refetchType: 'all' });
+
+      if (data.errors && data.errors.length > 0) {
+        toast({
+          title: "Partial deletion",
+          description: `Deleted ${data.deletedCount} file(s), but ${data.errors.length} failed. Selection kept for retry.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Deleted ${data.deletedCount} file(s) successfully`,
+        });
+        setSelectedFiles(new Set());
+        setSelectionMode(false);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete files",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDownload = async (file: FileMetadata) => {
+    try {
+      const response = await fetch(`/api/files/download/${file.id}`);
+      if (!response.ok) throw new Error('Download failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    console.log('[FOLDER-SELECT] files:', files);
+    console.log('[FOLDER-SELECT] files.length:', files?.length || 0);
+    if (files && files.length > 0) {
+      console.log('[FOLDER-SELECT] First file:', files[0]);
+      console.log('[FOLDER-SELECT] webkitRelativePath:', (files[0] as any).webkitRelativePath);
+      uploadFolderMutation.mutate(files);
+    } else {
+      console.error('[FOLDER-SELECT] ERROR: No files in FileList!');
+    }
+    e.target.value = '';
+  };
+
+  const handleFileSelect = (file: FileMetadata, selected: boolean) => {
+    setSelectedFiles(prev => {
+      const newSet = new Set(prev);
+      if (selected) {
+        newSet.add(file.id);
+      } else {
+        newSet.delete(file.id);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkDownload = async () => {
+    try {
+      const zip = new JSZip();
+      const selectedFilesList = files.filter(f => selectedFiles.has(f.id) && !f.isFolder);
+
+      if (selectedFilesList.length === 0) {
+        toast({
+          title: "No files selected",
+          description: "Please select at least one file (folders cannot be downloaded in bulk)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const downloadPromises = selectedFilesList.map(async (file) => {
+        try {
+          const response = await fetch(`/api/files/download/${file.id}`);
+          if (!response.ok) throw new Error(`Failed to download ${file.name}`);
+          const blob = await response.blob();
+          return { file, blob, success: true };
+        } catch (error) {
+          return { file, blob: null, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+        }
+      });
+
+      const results = await Promise.all(downloadPromises);
+      const failures = results.filter(r => !r.success);
+      const successes = results.filter(r => r.success);
+
+      if (failures.length > 0) {
+        toast({
+          title: "Partial download failure",
+          description: `Failed to download ${failures.length} of ${selectedFilesList.length} file(s)`,
+          variant: "destructive",
+        });
+      }
+
+      if (successes.length === 0) {
+        toast({
+          title: "Download failed",
+          description: "Could not download any files",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      successes.forEach(({ file, blob }) => {
+        if (blob) zip.file(file.name, blob);
+      });
+
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = window.URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'files.zip';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      if (failures.length === 0) {
+        toast({
+          title: "Success",
+          description: "All files downloaded successfully",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to download files",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedFiles.size > 0) {
+      bulkDeleteMutation.mutate(Array.from(selectedFiles));
+    }
+  };
+
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    setSelectedFiles(new Set());
+  };
+
+  const getUserInitials = () => {
+    if (!user) return '?';
+    if (user.firstName && user.lastName) {
+      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    }
+    if (user.email) {
+      return user.email.slice(0, 2).toUpperCase();
+    }
+    return '?';
+  };
+
+  return (
+    <HacktivateBackgroundLayout>
+      <header className="border-b backdrop-blur-sm bg-background/80 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-primary">
+                <FolderOpen className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <h1 className="text-2xl font-bold">HackTIvate</h1>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowInstructions(!showInstructions)}
+                data-testid="button-help"
+              >
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Help
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full" data-testid="button-user-menu">
+                    <Avatar>
+                      <AvatarImage src={user?.profileImageUrl || undefined} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="px-2 py-1.5 text-sm">
+                    <p className="font-semibold">{user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'User'}</p>
+                    <p className="text-xs text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <DropdownMenuSeparator />
+                  {user?.isAdmin && (
+                    <>
+                      <DropdownMenuItem onClick={() => navigate('/admin')} data-testid="link-admin">
+                        <Settings className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => navigate('/s3-browser')} data-testid="link-s3-browser">
+                        <Database className="mr-2 h-4 w-4" />
+                        S3 Browser
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuItem onClick={async () => {
+                    await apiRequest('POST', '/api/auth/logout', {});
+                    queryClient.clear();
+                    window.location.href = '/';
+                  }} data-testid="button-logout">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center justify-center">
+            <CountdownTimer />
+          </div>
+        </div>
+      </header>
+
+      <main className="flex-1 container mx-auto px-4 py-8">
+        {showInstructions && (
+          <div className="mb-6">
+            <WelcomeInstructions onClose={() => setShowInstructions(false)} />
+          </div>
+        )}
+
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <Breadcrumb path={currentPath} onNavigate={setCurrentPath} />
+
+              <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={toggleSelectionMode}
+                variant={selectionMode ? "default" : "outline"}
+                data-testid="button-toggle-selection"
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                {selectionMode ? 'Cancel Select' : 'Select'}
+              </Button>
+
+              <Button
+                onClick={() => setShowCreateFolder(true)}
+                variant="outline"
+                disabled={uploadDisabled || selectionMode}
+                data-testid="button-create-folder"
+              >
+                <FolderPlus className="mr-2 h-4 w-4" />
+                New Folder
+              </Button>
+
+              <Button
+                asChild
+                disabled={uploadDisabled || selectionMode}
+                data-testid="button-upload-files"
+              >
+                <label className="cursor-pointer">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Files
+                  <input
+                    type="file"
+                    multiple
+                    onChange={(e) => e.target.files && uploadMutation.mutate(e.target.files)}
+                    className="sr-only"
+                    disabled={uploadDisabled || selectionMode}
+                  />
+                </label>
+              </Button>
+
+              <Button
+                asChild
+                disabled={uploadDisabled || selectionMode}
+                data-testid="button-upload-folder"
+              >
+                <label className="cursor-pointer">
+                  <FolderPlus className="mr-2 h-4 w-4" />
+                  Upload Folder
+                  <input
+                    type="file"
+                    /* @ts-ignore - webkitdirectory is not in types but is widely supported */
+                    webkitdirectory=""
+                    directory=""
+                    onChange={handleFolderSelect}
+                    className="sr-only"
+                    disabled={uploadDisabled || selectionMode}
+                  />
+                </label>
+              </Button>
+            </div>
+            </div>
+
+            <FileSearchBar
+              search={search}
+              onSearchChange={setSearch}
+              fileType={fileType}
+              onFileTypeChange={setFileType}
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+            />
+          </div>
+
+          {!uploadDisabled && (
+            <FileUploadZone
+              onUpload={(files) => uploadMutation.mutate(files)}
+              isUploading={uploadMutation.isPending}
+              disabled={uploadDisabled}
+            />
+          )}
+
+          {filesLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : files.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted mb-4">
+                <FolderOpen className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No files yet</h3>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                {uploadDisabled ? 'Upload deadline has passed' : 'Upload your first file or folder to get started'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {files.map((file) => (
+                <FileCard
+                  key={file.id}
+                  file={file}
+                  onDownload={handleDownload}
+                  onDelete={setFileToDelete}
+                  onNavigate={(file) => setCurrentPath(file.path + file.name + '/')}
+                  onPreview={setFileToPreview}
+                  selectionMode={selectionMode}
+                  isSelected={selectedFiles.has(file.id)}
+                  onSelect={handleFileSelect}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {selectionMode && selectedFiles.size > 0 && (
+        <BulkActionBar
+          selectedCount={selectedFiles.size}
+          onDownload={handleBulkDownload}
+          onDelete={handleBulkDelete}
+          onCancel={toggleSelectionMode}
+          isDeleting={bulkDeleteMutation.isPending}
+        />
+      )}
+
+      <FilePreviewModal
+        file={fileToPreview}
+        onClose={() => setFileToPreview(null)}
+      />
+
+      <CreateFolderDialog
+        open={showCreateFolder}
+  onClose={() => setShowCreateFolder(false)}
+        onConfirm={(name) => createFolderMutation.mutate(name)}
+        isCreating={createFolderMutation.isPending}
+      />
+
+      <DeleteConfirmDialog
+        open={!!fileToDelete}
+        onClose={() => setFileToDelete(null)}
+        onConfirm={() => fileToDelete && deleteMutation.mutate(fileToDelete.id)}
+        file={fileToDelete}
+        isDeleting={deleteMutation.isPending}
+      />
+    </HacktivateBackgroundLayout>
+  );
+}
