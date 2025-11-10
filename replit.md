@@ -2,9 +2,18 @@
 
 ## Overview
 
-HackTIvate is a secure, time-limited file management platform designed specifically for HackTIvate 2025 participants. It provides file upload, organization, and sharing capabilities with a countdown timer that enforces access deadlines. The application features a modern, clean interface inspired by Linear and Notion, built with a focus on productivity and clarity.
+HackTIvate is a secure, time-limited file management platform designed specifically for HackTIvate 2025 participants. It provides file upload, organization, and sharing capabilities with a countdown timer that enforces access deadlines. The application features a modern, clean interface with a beautiful HackTIvate 2025 branded background across all pages, built with a focus on productivity and clarity.
 
 The platform allows users to authenticate via Replit Auth, upload files and folders to AWS S3, organize content in a nested folder structure, and manage files with a deadline-based access control system.
+
+## Recent Changes
+
+**November 10, 2025**: Complete background image implementation across all pages
+- Created `HacktivateBackgroundLayout` component for consistent background treatment
+- Applied HackTIvate 2025 background image to all pages (Landing, Dashboard, Admin, S3Browser)
+- Added dark overlay (40% opacity) for optimal text readability
+- Implemented frosted glass effect (backdrop-blur) on all page headers
+- Eliminated code duplication by centralizing background logic in shared component
 
 ## User Preferences
 
@@ -23,12 +32,15 @@ Preferred communication style: Simple, everyday language.
 - shadcn/ui (New York style) with Radix UI primitives for accessible, unstyled components
 - Tailwind CSS for utility-first styling with custom design tokens
 - Inter font for primary text and JetBrains Mono for monospace content (file sizes, timestamps, timer display)
+- `HacktivateBackgroundLayout` component - Shared layout wrapper providing consistent background image, dark overlay, and z-index stacking across all pages
 
 **State Management**
 - TanStack Query (React Query) for server state management, caching, and data synchronization
 - Local component state with React hooks for UI-specific state
 
 **Design System**
+- HackTIvate 2025 branded background image on all pages with dark overlay
+- Frosted glass effect (backdrop-blur-sm bg-background/80) on headers
 - Linear + Notion-inspired productivity interface
 - Neutral color palette as base color scheme
 - Consistent spacing system using Tailwind units (2, 4, 6, 8, 12)
