@@ -379,6 +379,9 @@ export default function Admin() {
                     onChange={(e) => setDeadline(e.target.value)}
                     data-testid="input-deadline"
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Timezone: {Intl.DateTimeFormat().resolvedOptions().timeZone} ({new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' }).split(' ').pop()})
+                  </p>
                 </div>
 
                 <div className="flex items-center space-x-2">

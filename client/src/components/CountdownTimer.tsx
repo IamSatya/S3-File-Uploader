@@ -108,6 +108,12 @@ export function CountdownTimer() {
           Upload deadline approaching!
         </p>
       )}
+      
+      {!isExpired && (
+        <p className="text-xs text-muted-foreground">
+          Deadline: {new Date(config.deadline).toLocaleString()} ({Intl.DateTimeFormat().resolvedOptions().timeZone})
+        </p>
+      )}
     </div>
   );
 }
