@@ -259,7 +259,9 @@ export default function Admin() {
       });
       return;
     }
-    updateTimerMutation.mutate({ deadline, isActive });
+    // Convert datetime-local to ISO string (preserves local timezone)
+    const deadlineDate = new Date(deadline);
+    updateTimerMutation.mutate({ deadline: deadlineDate.toISOString(), isActive });
   };
 
   const handleCreateUser = (data: RegisterInput) => {
